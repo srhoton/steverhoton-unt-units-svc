@@ -165,8 +165,10 @@ func TestDynamoDBUnitRepository_PaginationTokenRoundTrip(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, "account-123", skAttr.Value)
 
-	// Verify that the token is base64 encoded (basic check)
-	assert.Contains(t, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", string(token[0]))
+	// Verify that the token is base64 encoded (robust check)
+	_, err := base64.StdEncoding.DecodeString(token)
+	require.NoError(t, err, "Token is not valid base64")
+	assert.NotEmpty(t, token, "Decoded token should not be empty")
 }
 
 func TestUnit_SoftDeleteFunctionality(t *testing.T) {
