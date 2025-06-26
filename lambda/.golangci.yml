@@ -1,0 +1,119 @@
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters:
+  enable:
+    - gofmt
+    - govet
+    - errcheck
+    - staticcheck
+    - gosec
+    - revive
+    - gocyclo
+    - misspell
+    - unused
+    - gosimple
+    - bodyclose
+    - goconst
+    - unparam
+    - unconvert
+    - ineffassign
+    - typecheck
+    - asciicheck
+    - bidichk
+    - durationcheck
+    - errorlint
+    - exportloopref
+    - forbidigo
+    - goimports
+    - goprintffuncname
+    - noctx
+    - nolintlint
+    - predeclared
+    - rowserrcheck
+    - sqlclosecheck
+    - wastedassign
+    - whitespace
+  disable:
+    - structcheck  # deprecated
+    - deadcode     # deprecated
+    - varcheck     # deprecated
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  
+  revive:
+    rules:
+      - name: exported
+        disabled: false
+        arguments:
+          - "disableStutteringCheck"
+      - name: var-naming
+        disabled: false
+      - name: package-comments
+        disabled: true  # Allow packages without comments for internal packages
+  
+  errcheck:
+    check-type-assertions: true
+    check-blank: false
+  
+  govet:
+    check-shadowing: true
+    enable-all: true
+  
+  staticcheck:
+    checks: ["all"]
+  
+  gosec:
+    excludes:
+      - G104  # Allow unhandled errors in some cases (will be caught by errcheck)
+  
+  goimports:
+    local-prefixes: github.com/steverhoton/unt-units-svc
+  
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  
+  misspell:
+    locale: US
+  
+  unparam:
+    check-exported: false
+
+issues:
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - gosec
+        - unparam
+    
+    # Exclude gosec from mock files
+    - path: mock_.*\.go
+      linters:
+        - gosec
+    
+    # Allow long lines in generated code
+    - source: "^//go:generate"
+      linters:
+        - lll
+  
+  # Maximum issues count per one linter
+  max-issues-per-linter: 0
+  
+  # Maximum count of issues with the same text
+  max-same-issues: 0
+  
+  # Show only new issues
+  new: false

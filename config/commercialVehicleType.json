@@ -1,0 +1,753 @@
+{
+  "suggestedVin": {
+    "type": "S",
+    "required": true,
+    "name": "Suggested VIN"
+  },
+  "errorCode": {
+    "type": "S",
+    "required": true,
+    "name": "Error Code"
+  },
+  "possibleValues": {
+    "type": "S",
+    "required": true,
+    "name": "Possible Values"
+  },
+  "additionalErrorText": {
+    "type": "NULL",
+    "required": false,
+    "name": "Additional Error Text"
+  },
+  "errorText": {
+    "type": "S",
+    "required": true,
+    "name": "Error Text"
+  },
+  "vehicleDescriptor": {
+    "type": "S",
+    "required": true,
+    "name": "Vehicle Descriptor"
+  },
+  "destinationMarket": {
+    "type": "NULL",
+    "required": false,
+    "name": "Destination Market"
+  },
+  "make": {
+    "type": "S",
+    "required": true,
+    "name": "Make"
+  },
+  "manufacturerName": {
+    "type": "S",
+    "required": true,
+    "name": "Manufacturer Name"
+  },
+  "model": {
+    "type": "S",
+    "required": true,
+    "name": "Model"
+  },
+  "modelYear": {
+    "type": "S",
+    "required": true,
+    "name": "Model Year"
+  },
+  "plantCity": {
+    "type": "S",
+    "required": true,
+    "name": "Plant City"
+  },
+  "series": {
+    "type": "S",
+    "required": true,
+    "name": "Series"
+  },
+  "trim": {
+    "type": "NULL",
+    "required": false,
+    "name": "Trim"
+  },
+  "vehicleType": {
+    "type": "S",
+    "required": true,
+    "name": "Vehicle Type"
+  },
+  "plantCountry": {
+    "type": "S",
+    "required": true,
+    "name": "Plant Country"
+  },
+  "plantCompanyName": {
+    "type": "NULL",
+    "required": false,
+    "name": "Plant Company Name"
+  },
+  "plantState": {
+    "type": "NULL",
+    "required": false,
+    "name": "Plant State"
+  },
+  "trim2": {
+    "type": "NULL",
+    "required": false,
+    "name": "Trim2"
+  },
+  "series2": {
+    "type": "NULL",
+    "required": false,
+    "name": "Series2"
+  },
+  "note": {
+    "type": "S",
+    "required": true,
+    "name": "Note"
+  },
+  "basePrice": {
+    "type": "NULL",
+    "required": false,
+    "name": "Base Price ($)"
+  },
+  "nonLandUse": {
+    "type": "NULL",
+    "required": false,
+    "name": "Non-Land Use"
+  },
+  "bodyClass": {
+    "type": "S",
+    "required": true,
+    "name": "Body Class"
+  },
+  "doors": {
+    "type": "S",
+    "required": true,
+    "name": "Doors"
+  },
+  "windows": {
+    "type": "NULL",
+    "required": false,
+    "name": "Windows"
+  },
+  "wheelBaseType": {
+    "type": "NULL",
+    "required": false,
+    "name": "Wheel Base Type"
+  },
+  "trackWidthInches": {
+    "type": "NULL",
+    "required": false,
+    "name": "Track Width (inches)"
+  },
+  "grossVehicleWeightRatingFrom": {
+    "type": "S",
+    "required": true,
+    "name": "Gross Vehicle Weight Rating From"
+  },
+  "bedLengthInches": {
+    "type": "NULL",
+    "required": false,
+    "name": "Bed Length (inches)"
+  },
+  "curbWeightPounds": {
+    "type": "NULL",
+    "required": false,
+    "name": "Curb Weight (pounds)"
+  },
+  "wheelBaseInchesFrom": {
+    "type": "S",
+    "required": true,
+    "name": "Wheel Base (inches) From"
+  },
+  "wheelBaseInchesTo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Wheel Base (inches) To"
+  },
+  "grossCombinationWeightRatingFrom": {
+    "type": "NULL",
+    "required": false,
+    "name": "Gross Combination Weight Rating From"
+  },
+  "grossCombinationWeightRatingTo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Gross Combination Weight Rating To"
+  },
+  "grossVehicleWeightRatingTo": {
+    "type": "S",
+    "required": true,
+    "name": "Gross Vehicle Weight Rating To"
+  },
+  "bedType": {
+    "type": "S",
+    "required": true,
+    "name": "Bed Type"
+  },
+  "cabType": {
+    "type": "S",
+    "required": true,
+    "name": "Cab Type"
+  },
+  "trailerTypeConnection": {
+    "type": "S",
+    "required": true,
+    "name": "Trailer Type Connection"
+  },
+  "trailerBodyType": {
+    "type": "S",
+    "required": true,
+    "name": "Trailer Body Type"
+  },
+  "trailerLengthFeet": {
+    "type": "NULL",
+    "required": false,
+    "name": "Trailer Length (feet)"
+  },
+  "otherTrailerInfo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Other Trailer Info"
+  },
+  "numberOfWheels": {
+    "type": "NULL",
+    "required": false,
+    "name": "Number of Wheels"
+  },
+  "wheelSizeFrontInches": {
+    "type": "NULL",
+    "required": false,
+    "name": "Wheel Size Front (inches)"
+  },
+  "wheelSizeRearInches": {
+    "type": "NULL",
+    "required": false,
+    "name": "Wheel Size Rear (inches)"
+  },
+  "customMotorcycleType": {
+    "type": "S",
+    "required": true,
+    "name": "Custom Motorcycle Type"
+  },
+  "motorcycleSuspensionType": {
+    "type": "S",
+    "required": true,
+    "name": "Motorcycle Suspension Type"
+  },
+  "motorcycleChassisType": {
+    "type": "S",
+    "required": true,
+    "name": "Motorcycle Chassis Type"
+  },
+  "otherMotorcycleInfo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Other Motorcycle Info"
+  },
+  "fuelTankType": {
+    "type": "NULL",
+    "required": false,
+    "name": "Fuel-Tank Type"
+  },
+  "fuelTankMaterial": {
+    "type": "NULL",
+    "required": false,
+    "name": "Fuel-Tank Material"
+  },
+  "combinedBrakingSystem": {
+    "type": "NULL",
+    "required": false,
+    "name": "Combined Braking System (CBS)"
+  },
+  "wheelieMitigation": {
+    "type": "NULL",
+    "required": false,
+    "name": "Wheelie Mitigation"
+  },
+  "busLengthFeet": {
+    "type": "NULL",
+    "required": false,
+    "name": "Bus Length (feet)"
+  },
+  "busFloorConfigurationType": {
+    "type": "S",
+    "required": true,
+    "name": "Bus Floor Configuration Type"
+  },
+  "busType": {
+    "type": "S",
+    "required": true,
+    "name": "Bus Type"
+  },
+  "otherBusInfo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Other Bus Info"
+  },
+  "entertainmentSystem": {
+    "type": "NULL",
+    "required": false,
+    "name": "Entertainment System"
+  },
+  "steeringLocation": {
+    "type": "NULL",
+    "required": false,
+    "name": "Steering Location"
+  },
+  "numberOfSeats": {
+    "type": "NULL",
+    "required": false,
+    "name": "Number of Seats"
+  },
+  "numberOfSeatRows": {
+    "type": "NULL",
+    "required": false,
+    "name": "Number of Seat Rows"
+  },
+  "transmissionStyle": {
+    "type": "NULL",
+    "required": false,
+    "name": "Transmission Style"
+  },
+  "transmissionSpeeds": {
+    "type": "NULL",
+    "required": false,
+    "name": "Transmission Speeds"
+  },
+  "driveType": {
+    "type": "NULL",
+    "required": false,
+    "name": "Drive Type"
+  },
+  "axles": {
+    "type": "NULL",
+    "required": false,
+    "name": "Axles"
+  },
+  "axleConfiguration": {
+    "type": "NULL",
+    "required": false,
+    "name": "Axle Configuration"
+  },
+  "brakeSystemType": {
+    "type": "NULL",
+    "required": false,
+    "name": "Brake System Type"
+  },
+  "brakeSystemDescription": {
+    "type": "NULL",
+    "required": false,
+    "name": "Brake System Description"
+  },
+  "otherBatteryInfo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Other Battery Info"
+  },
+  "batteryType": {
+    "type": "NULL",
+    "required": false,
+    "name": "Battery Type"
+  },
+  "numberOfBatteryCellsPerModule": {
+    "type": "NULL",
+    "required": false,
+    "name": "Number of Battery Cells per Module"
+  },
+  "batteryCurrentAmpsFrom": {
+    "type": "NULL",
+    "required": false,
+    "name": "Battery Current (Amps) From"
+  },
+  "batteryVoltageVoltsFrom": {
+    "type": "NULL",
+    "required": false,
+    "name": "Battery Voltage (Volts) From"
+  },
+  "batteryEnergyKwhFrom": {
+    "type": "NULL",
+    "required": false,
+    "name": "Battery Energy (kWh) From"
+  },
+  "evDriveUnit": {
+    "type": "NULL",
+    "required": false,
+    "name": "EV Drive Unit"
+  },
+  "batteryCurrentAmpsTo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Battery Current (Amps) To"
+  },
+  "batteryVoltageVoltsTo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Battery Voltage (Volts) To"
+  },
+  "batteryEnergyKwhTo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Battery Energy (kWh) To"
+  },
+  "numberOfBatteryModulesPerPack": {
+    "type": "NULL",
+    "required": false,
+    "name": "Number of Battery Modules per Pack"
+  },
+  "numberOfBatteryPacksPerVehicle": {
+    "type": "NULL",
+    "required": false,
+    "name": "Number of Battery Packs per Vehicle"
+  },
+  "chargerLevel": {
+    "type": "NULL",
+    "required": false,
+    "name": "Charger Level"
+  },
+  "chargerPowerKw": {
+    "type": "NULL",
+    "required": false,
+    "name": "Charger Power (kW)"
+  },
+  "engineNumberOfCylinders": {
+    "type": "S",
+    "required": true,
+    "name": "Engine Number of Cylinders"
+  },
+  "displacementCc": {
+    "type": "S",
+    "required": true,
+    "name": "Displacement (CC)"
+  },
+  "displacementCi": {
+    "type": "S",
+    "required": true,
+    "name": "Displacement (CI)"
+  },
+  "displacementL": {
+    "type": "S",
+    "required": true,
+    "name": "Displacement (L)"
+  },
+  "engineStrokeCycles": {
+    "type": "NULL",
+    "required": false,
+    "name": "Engine Stroke Cycles"
+  },
+  "engineModel": {
+    "type": "NULL",
+    "required": false,
+    "name": "Engine Model"
+  },
+  "enginePowerKw": {
+    "type": "NULL",
+    "required": false,
+    "name": "Engine Power (kW)"
+  },
+  "fuelTypePrimary": {
+    "type": "S",
+    "required": true,
+    "name": "Fuel Type - Primary"
+  },
+  "valveTrainDesign": {
+    "type": "NULL",
+    "required": false,
+    "name": "Valve Train Design"
+  },
+  "engineConfiguration": {
+    "type": "NULL",
+    "required": false,
+    "name": "Engine Configuration"
+  },
+  "fuelTypeSecondary": {
+    "type": "NULL",
+    "required": false,
+    "name": "Fuel Type - Secondary"
+  },
+  "fuelDeliveryFuelInjectionType": {
+    "type": "NULL",
+    "required": false,
+    "name": "Fuel Delivery / Fuel Injection Type"
+  },
+  "engineBrakeHpFrom": {
+    "type": "S",
+    "required": true,
+    "name": "Engine Brake (hp) From"
+  },
+  "coolingType": {
+    "type": "NULL",
+    "required": false,
+    "name": "Cooling Type"
+  },
+  "engineBrakeHpTo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Engine Brake (hp) To"
+  },
+  "electrificationLevel": {
+    "type": "NULL",
+    "required": false,
+    "name": "Electrification Level"
+  },
+  "otherEngineInfo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Other Engine Info"
+  },
+  "turbo": {
+    "type": "NULL",
+    "required": false,
+    "name": "Turbo"
+  },
+  "topSpeedMph": {
+    "type": "NULL",
+    "required": false,
+    "name": "Top Speed (MPH)"
+  },
+  "engineManufacturer": {
+    "type": "NULL",
+    "required": false,
+    "name": "Engine Manufacturer"
+  },
+  "pretensioner": {
+    "type": "NULL",
+    "required": false,
+    "name": "Pretensioner"
+  },
+  "seatBeltType": {
+    "type": "S",
+    "required": true,
+    "name": "Seat Belt Type"
+  },
+  "otherRestraintSystemInfo": {
+    "type": "S",
+    "required": true,
+    "name": "Other Restraint System Info"
+  },
+  "curtainAirBagLocations": {
+    "type": "NULL",
+    "required": false,
+    "name": "Curtain Air Bag Locations"
+  },
+  "seatCushionAirBagLocations": {
+    "type": "NULL",
+    "required": false,
+    "name": "Seat Cushion Air Bag Locations"
+  },
+  "frontAirBagLocations": {
+    "type": "S",
+    "required": true,
+    "name": "Front Air Bag Locations"
+  },
+  "kneeAirBagLocations": {
+    "type": "NULL",
+    "required": false,
+    "name": "Knee Air Bag Locations"
+  },
+  "sideAirBagLocations": {
+    "type": "NULL",
+    "required": false,
+    "name": "Side Air Bag Locations"
+  },
+  "antiLockBrakingSystem": {
+    "type": "NULL",
+    "required": false,
+    "name": "Anti-lock Braking System (ABS)"
+  },
+  "electronicStabilityControl": {
+    "type": "NULL",
+    "required": false,
+    "name": "Electronic Stability Control (ESC)"
+  },
+  "tractionControl": {
+    "type": "NULL",
+    "required": false,
+    "name": "Traction Control"
+  },
+  "tirePressureMonitoringSystemType": {
+    "type": "NULL",
+    "required": false,
+    "name": "Tire Pressure Monitoring System (TPMS) Type"
+  },
+  "activeSafetySystemNote": {
+    "type": "NULL",
+    "required": false,
+    "name": "Active Safety System Note"
+  },
+  "autoReverseSystemForWindowsAndSunroofs": {
+    "type": "NULL",
+    "required": false,
+    "name": "Auto-Reverse System for Windows and Sunroofs"
+  },
+  "automaticPedestrianAlertingSound": {
+    "type": "NULL",
+    "required": false,
+    "name": "Automatic Pedestrian Alerting Sound (for Hybrid and EV only)"
+  },
+  "eventDataRecorder": {
+    "type": "NULL",
+    "required": false,
+    "name": "Event Data Recorder (EDR)"
+  },
+  "keylessIgnition": {
+    "type": "NULL",
+    "required": false,
+    "name": "Keyless Ignition"
+  },
+  "saeAutomationLevelFrom": {
+    "type": "NULL",
+    "required": false,
+    "name": "SAE Automation Level From"
+  },
+  "saeAutomationLevelTo": {
+    "type": "NULL",
+    "required": false,
+    "name": "SAE Automation Level To"
+  },
+  "adaptiveCruiseControl": {
+    "type": "NULL",
+    "required": false,
+    "name": "Adaptive Cruise Control (ACC)"
+  },
+  "crashImminentBraking": {
+    "type": "NULL",
+    "required": false,
+    "name": "Crash Imminent Braking (CIB)"
+  },
+  "forwardCollisionWarning": {
+    "type": "NULL",
+    "required": false,
+    "name": "Forward Collision Warning (FCW)"
+  },
+  "dynamicBrakeSupport": {
+    "type": "NULL",
+    "required": false,
+    "name": "Dynamic Brake Support (DBS)"
+  },
+  "pedestrianAutomaticEmergencyBraking": {
+    "type": "NULL",
+    "required": false,
+    "name": "Pedestrian Automatic Emergency Braking (PAEB)"
+  },
+  "blindSpotWarning": {
+    "type": "NULL",
+    "required": false,
+    "name": "Blind Spot Warning (BSW)"
+  },
+  "laneDepartureWarning": {
+    "type": "NULL",
+    "required": false,
+    "name": "Lane Departure Warning (LDW)"
+  },
+  "laneKeepingAssistance": {
+    "type": "NULL",
+    "required": false,
+    "name": "Lane Keeping Assistance (LKA)"
+  },
+  "blindSpotIntervention": {
+    "type": "NULL",
+    "required": false,
+    "name": "Blind Spot Intervention (BSI)"
+  },
+  "laneCenteringAssistance": {
+    "type": "NULL",
+    "required": false,
+    "name": "Lane Centering Assistance"
+  },
+  "backupCamera": {
+    "type": "NULL",
+    "required": false,
+    "name": "Backup Camera"
+  },
+  "parkingAssist": {
+    "type": "NULL",
+    "required": false,
+    "name": "Parking Assist"
+  },
+  "rearCrossTrafficAlert": {
+    "type": "NULL",
+    "required": false,
+    "name": "Rear Cross Traffic Alert"
+  },
+  "rearAutomaticEmergencyBraking": {
+    "type": "NULL",
+    "required": false,
+    "name": "Rear Automatic Emergency Braking"
+  },
+  "automaticCrashNotification": {
+    "type": "NULL",
+    "required": false,
+    "name": "Automatic Crash Notification (ACN) / Advanced Automatic Crash Notification (AACN)"
+  },
+  "daytimeRunningLight": {
+    "type": "NULL",
+    "required": false,
+    "name": "Daytime Running Light (DRL)"
+  },
+  "headlampLightSource": {
+    "type": "NULL",
+    "required": false,
+    "name": "Headlamp Light Source"
+  },
+  "semiautomaticHeadlampBeamSwitching": {
+    "type": "NULL",
+    "required": false,
+    "name": "Semiautomatic Headlamp Beam Switching"
+  },
+  "adaptiveDrivingBeam": {
+    "type": "NULL",
+    "required": false,
+    "name": "Adaptive Driving Beam (ADB)"
+  },
+  "createdAt": {
+    "type": "N",
+    "required": true,
+    "name": "Created At"
+  },
+  "updatedAt": {
+    "type": "N",
+    "required": true,
+    "name": "Updated At"
+  },
+  "deletedAt": {
+    "type": "N",
+    "required": true,
+    "name": "Deleted At"
+  },
+  "extendedAttributes": {
+    "type": "L",
+    "required": false,
+    "name": "Extended Attributes",
+    "memberType": "M",
+    "memberAttributes": {
+      "attributeName": {
+        "type": "S",
+        "required": true
+      },
+      "attributeValue": {
+        "type": "S",
+        "required": true
+      }
+    }
+  },
+  "acesAttributes": {
+    "type": "L",
+    "required": false,
+    "name": "ACES Attributes",
+    "memberType": "M",
+    "memberAttributes": {
+      "attributeName": {
+        "type": "S",
+        "required": true
+      },
+      "attributeValue": {
+        "type": "S",
+        "required": true
+      },
+      "attributeKey": {
+        "type": "S",
+        "required": true
+      }
+    }
+  }
+}
