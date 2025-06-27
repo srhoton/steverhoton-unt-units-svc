@@ -44,12 +44,12 @@ func (h *UnitHandlers) HandleCreate(ctx context.Context, event *appsync.AppSyncE
 		log.Printf("Missing required field: accountId")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "AccountID is required", ""), nil
 	}
-	if input.Unit.SuggestedVin == "" {
+	if input.SuggestedVin == "" {
 		log.Printf("Missing required field: suggestedVin")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "SuggestedVin is required", ""), nil
 	}
 
-	// Set the AccountID in the unit
+	// Set the AccountID in the embedded unit
 	input.Unit.AccountID = input.AccountID
 
 	// Attempt to create the unit
@@ -123,7 +123,7 @@ func (h *UnitHandlers) HandleUpdate(ctx context.Context, event *appsync.AppSyncE
 		return appsync.NewErrorResponse("INVALID_INPUT", "Invalid input type for update operation", ""), nil
 	}
 
-	// Validate required fields
+	// Validate required fields for update (only ID and AccountID are required)
 	if input.ID == "" {
 		log.Printf("Missing required field: id")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "ID is required", ""), nil
@@ -132,10 +132,7 @@ func (h *UnitHandlers) HandleUpdate(ctx context.Context, event *appsync.AppSyncE
 		log.Printf("Missing required field: accountId")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "AccountID is required", ""), nil
 	}
-	if input.Unit.SuggestedVin == "" {
-		log.Printf("Missing required field: suggestedVin")
-		return appsync.NewErrorResponse("VALIDATION_ERROR", "SuggestedVin is required", ""), nil
-	}
+	// Note: suggestedVin is not required for updates as they can be partial
 
 	// Check if the unit exists before attempting to update
 	existingUnit, err := h.repo.GetByKey(ctx, input.ID, input.AccountID)
@@ -148,19 +145,61 @@ func (h *UnitHandlers) HandleUpdate(ctx context.Context, event *appsync.AppSyncE
 		return appsync.NewErrorResponse("NOT_FOUND", "Unit not found", ""), nil
 	}
 
+	// Merge the update data with the existing unit (partial update)
+	updatedUnit := *existingUnit // Copy existing unit
+	
+	// Apply only the fields that were provided in the input
+	if input.SuggestedVin != "" {
+		updatedUnit.SuggestedVin = input.SuggestedVin
+	}
+	if input.ErrorCode != "" {
+		updatedUnit.ErrorCode = input.ErrorCode
+	}
+	if input.PossibleValues != "" {
+		updatedUnit.PossibleValues = input.PossibleValues
+	}
+	if input.ErrorText != "" {
+		updatedUnit.ErrorText = input.ErrorText
+	}
+	if input.VehicleDescriptor != "" {
+		updatedUnit.VehicleDescriptor = input.VehicleDescriptor
+	}
+	if input.Note != "" {
+		updatedUnit.Note = input.Note
+	}
+	if input.Make != "" {
+		updatedUnit.Make = input.Make
+	}
+	if input.ManufacturerName != "" {
+		updatedUnit.ManufacturerName = input.ManufacturerName
+	}
+	if input.Model != "" {
+		updatedUnit.Model = input.Model
+	}
+	if input.ModelYear != "" {
+		updatedUnit.ModelYear = input.ModelYear
+	}
+	if input.Series != "" {
+		updatedUnit.Series = input.Series
+	}
+	if input.VehicleType != "" {
+		updatedUnit.VehicleType = input.VehicleType
+	}
+	// Add more fields as needed for the update...
+	
 	// Ensure the unit key matches the input
-	input.Unit.ID = input.ID
-	input.Unit.AccountID = input.AccountID
+	updatedUnit.ID = input.ID
+	updatedUnit.AccountID = input.AccountID
 
 	// Attempt to update the unit
-	err = h.repo.Update(ctx, &input.Unit)
+	err = h.repo.Update(ctx, &updatedUnit)
 	if err != nil {
 		log.Printf("Error updating unit: %v", err)
 		return appsync.NewErrorResponse("UPDATE_FAILED", "Failed to update unit", err.Error()), nil
 	}
 
-	log.Printf("Unit updated successfully with ID: %s for account: %s", input.Unit.ID, input.Unit.AccountID)
-	return appsync.NewSuccessResponse(input.Unit, "Unit updated successfully"), nil
+	log.Printf("Unit updated successfully with ID: %s for account: %s", updatedUnit.ID, updatedUnit.AccountID)
+	return appsync.NewSuccessResponse(updatedUnit, "Unit updated successfully"), nil
 }
 
 // HandleDelete handles unit deletion requests
