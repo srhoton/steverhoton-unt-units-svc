@@ -44,12 +44,12 @@ func (h *UnitHandlers) HandleCreate(ctx context.Context, event *appsync.AppSyncE
 		log.Printf("Missing required field: accountId")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "AccountID is required", ""), nil
 	}
-	if input.Unit.SuggestedVin == "" {
+	if input.SuggestedVin == "" {
 		log.Printf("Missing required field: suggestedVin")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "SuggestedVin is required", ""), nil
 	}
 
-	// Set the AccountID in the unit
+	// Set the AccountID in the embedded unit
 	input.Unit.AccountID = input.AccountID
 
 	// Attempt to create the unit
@@ -132,7 +132,7 @@ func (h *UnitHandlers) HandleUpdate(ctx context.Context, event *appsync.AppSyncE
 		log.Printf("Missing required field: accountId")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "AccountID is required", ""), nil
 	}
-	if input.Unit.SuggestedVin == "" {
+	if input.SuggestedVin == "" {
 		log.Printf("Missing required field: suggestedVin")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "SuggestedVin is required", ""), nil
 	}
