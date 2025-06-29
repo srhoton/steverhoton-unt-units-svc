@@ -36,10 +36,15 @@ resource "aws_dynamodb_table" "units_table" {
     type = "S"
   }
 
-  # Global Secondary Index for querying by account ID
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  # Global Secondary Index for querying by unit ID
   global_secondary_index {
-    name            = "sk-index"
-    hash_key        = "sk"
+    name            = "id-index"
+    hash_key        = "id"
     projection_type = "ALL"
 
     # Only set capacity if using PROVISIONED billing mode

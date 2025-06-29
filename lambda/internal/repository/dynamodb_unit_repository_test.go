@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"encoding/base64"
 	"testing"
 	"time"
 
@@ -27,16 +28,17 @@ func TestDynamoDBUnitRepository_PaginationTokenEncoding(t *testing.T) {
 		{
 			name: "string attributes",
 			lastKey: map[string]types.AttributeValue{
-				"pk": &types.AttributeValueMemberS{Value: "test-id-123"},
-				"sk": &types.AttributeValueMemberS{Value: "account-456"},
+				"pk": &types.AttributeValueMemberS{Value: "account-456"},
+				"sk": &types.AttributeValueMemberS{Value: "location-123"},
 			},
 			expected: true,
 		},
 		{
-			name: "mixed string and number attributes",
+			name: "mixed attributes with id",
 			lastKey: map[string]types.AttributeValue{
-				"pk":        &types.AttributeValueMemberS{Value: "test-id-123"},
-				"sk":        &types.AttributeValueMemberS{Value: "account-456"},
+				"pk":        &types.AttributeValueMemberS{Value: "account-456"},
+				"sk":        &types.AttributeValueMemberS{Value: "location-123"},
+				"id":        &types.AttributeValueMemberS{Value: "test-id-123"},
 				"createdAt": &types.AttributeValueMemberN{Value: "1609459200"},
 			},
 			expected: true,
@@ -131,10 +133,10 @@ func TestDynamoDBUnitRepository_PaginationTokenRoundTrip(t *testing.T) {
 
 	// Create a comprehensive last key that represents what DynamoDB might return
 	originalKey := map[string]types.AttributeValue{
-		"pk":        &types.AttributeValueMemberS{Value: "550e8400-e29b-41d4-a716-446655440000"},
-		"sk":        &types.AttributeValueMemberS{Value: "account-123"},
+		"pk":        &types.AttributeValueMemberS{Value: "account-123"},
+		"sk":        &types.AttributeValueMemberS{Value: "550e8400-e29b-41d4-a716-446655440000"},
+		"id":        &types.AttributeValueMemberS{Value: "unit-123"},
 		"createdAt": &types.AttributeValueMemberN{Value: "1640995200"},
-		"updatedAt": &types.AttributeValueMemberN{Value: "1640995200"},
 	}
 
 	// Encode to token
@@ -153,20 +155,25 @@ func TestDynamoDBUnitRepository_PaginationTokenRoundTrip(t *testing.T) {
 	// Verify specific key-value pairs
 	assert.Contains(t, decodedKey, "pk")
 	assert.Contains(t, decodedKey, "sk")
+	assert.Contains(t, decodedKey, "id")
 	assert.Contains(t, decodedKey, "createdAt")
-	assert.Contains(t, decodedKey, "updatedAt")
 
 	// Verify string values are correctly handled
 	pkAttr, ok := decodedKey["pk"].(*types.AttributeValueMemberS)
 	require.True(t, ok)
-	assert.Equal(t, "550e8400-e29b-41d4-a716-446655440000", pkAttr.Value)
+	assert.Equal(t, "account-123", pkAttr.Value)
 
+	// Verify SK is correctly handled as string
 	skAttr, ok := decodedKey["sk"].(*types.AttributeValueMemberS)
 	require.True(t, ok)
-	assert.Equal(t, "account-123", skAttr.Value)
+	assert.Equal(t, "550e8400-e29b-41d4-a716-446655440000", skAttr.Value)
+
+	idAttr, ok := decodedKey["id"].(*types.AttributeValueMemberS)
+	require.True(t, ok)
+	assert.Equal(t, "unit-123", idAttr.Value)
 
 	// Verify that the token is base64 encoded (robust check)
-	_, err := base64.StdEncoding.DecodeString(token)
+	_, err = base64.StdEncoding.DecodeString(token)
 	require.NoError(t, err, "Token is not valid base64")
 	assert.NotEmpty(t, token, "Decoded token should not be empty")
 }
@@ -198,7 +205,7 @@ func TestUnit_SoftDeleteFunctionality(t *testing.T) {
 	assert.Greater(t, unit.DeletedAt, now-10) // Within last 10 seconds
 }
 
-func TestUnit_TimestampFunctionality(t *testing.T) {
+func TestUnit_SetTimestamps(t *testing.T) {
 	// Test the Unit model's timestamp functionality
 	unit := &models.Unit{
 		ID:           "test-unit-id",
@@ -210,10 +217,10 @@ func TestUnit_TimestampFunctionality(t *testing.T) {
 	assert.Equal(t, int64(0), unit.CreatedAt)
 	assert.Equal(t, int64(0), unit.UpdatedAt)
 
-	// Set timestamps
+	// Set timestamps for the first time
 	unit.SetTimestamps()
 
-	// After setting timestamps, both should be populated
+	// Both timestamps should be set
 	now := time.Now().Unix()
 	assert.Greater(t, unit.CreatedAt, int64(0))
 	assert.Greater(t, unit.UpdatedAt, int64(0))
@@ -222,7 +229,7 @@ func TestUnit_TimestampFunctionality(t *testing.T) {
 
 	// Store the original created time
 	originalCreatedAt := unit.CreatedAt
-	
+
 	// Sleep a bit and set timestamps again
 	time.Sleep(time.Second * 1)
 	unit.SetTimestamps()

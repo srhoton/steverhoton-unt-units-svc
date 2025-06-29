@@ -77,14 +77,14 @@ const (
 
 // CreateUnitInput represents input for creating a unit
 type CreateUnitInput struct {
-	AccountID string `json:"accountId"`
+	AccountID   string `json:"accountId"`
 	models.Unit        // Embed Unit fields directly
 }
 
 // UpdateUnitInput represents input for updating a unit
 type UpdateUnitInput struct {
-	ID        string `json:"id"`
-	AccountID string `json:"accountId"`
+	ID          string `json:"id"`
+	AccountID   string `json:"accountId"`
 	models.Unit        // Embed Unit fields directly
 }
 

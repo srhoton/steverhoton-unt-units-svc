@@ -13,26 +13,28 @@ func TestUnit_GetKey(t *testing.T) {
 	tests := []struct {
 		name string
 		unit Unit
-		want map[string]string
+		want map[string]interface{}
 	}{
 		{
 			name: "Valid unit with required fields",
 			unit: Unit{
-				ID:        "123e4567-e89b-12d3-a456-426614174000",
-				AccountID: "account-123",
+				ID:         "123e4567-e89b-12d3-a456-426614174000",
+				AccountID:  "account-123",
+				LocationID: "550e8400-e29b-41d4-a716-446655440000",
 			},
-			want: map[string]string{
-				"pk": "123e4567-e89b-12d3-a456-426614174000",
-				"sk": "account-123",
+			want: map[string]interface{}{
+				"pk": "account-123",
+				"sk": "550e8400-e29b-41d4-a716-446655440000",
 			},
 		},
 		{
 			name: "Unit with empty fields",
 			unit: Unit{
-				ID:        "",
-				AccountID: "",
+				ID:         "",
+				AccountID:  "",
+				LocationID: "",
 			},
-			want: map[string]string{
+			want: map[string]interface{}{
 				"pk": "",
 				"sk": "",
 			},
@@ -47,7 +49,7 @@ func TestUnit_GetKey(t *testing.T) {
 			require.Contains(t, key, "pk")
 			require.Contains(t, key, "sk")
 
-			// Extract string values from AttributeValue
+			// Extract values from AttributeValue
 			pkAttr, ok := key["pk"].(*types.AttributeValueMemberS)
 			require.True(t, ok)
 			assert.Equal(t, tt.want["pk"], pkAttr.Value)
@@ -61,21 +63,21 @@ func TestUnit_GetKey(t *testing.T) {
 
 func TestUnit_GenerateID(t *testing.T) {
 	unit := Unit{}
-	
+
 	// Initially no ID
 	assert.Empty(t, unit.ID)
-	
+
 	// Generate ID
 	unit.GenerateID()
-	
+
 	// Should have a UUID
 	assert.NotEmpty(t, unit.ID)
 	assert.Len(t, unit.ID, 36) // Standard UUID length
-	
+
 	// Generate another ID for a different unit
 	unit2 := Unit{}
 	unit2.GenerateID()
-	
+
 	// Should be different
 	assert.NotEqual(t, unit.ID, unit2.ID)
 }
@@ -270,4 +272,54 @@ func TestUnit_FullStructValidation(t *testing.T) {
 	assert.False(t, unit.IsDeleted())
 	unit.MarkDeleted()
 	assert.True(t, unit.IsDeleted())
+}
+
+func TestUnit_ValidateLocationID(t *testing.T) {
+	tests := []struct {
+		name       string
+		locationID string
+		wantErr    bool
+		errMsg     string
+	}{
+		{
+			name:       "Valid UUID",
+			locationID: "550e8400-e29b-41d4-a716-446655440000",
+			wantErr:    false,
+		},
+		{
+			name:       "Empty locationID",
+			locationID: "",
+			wantErr:    true,
+			errMsg:     "locationId is required",
+		},
+		{
+			name:       "Invalid UUID format",
+			locationID: "not-a-uuid",
+			wantErr:    true,
+			errMsg:     "locationId must be a valid UUID",
+		},
+		{
+			name:       "Invalid UUID format with dashes",
+			locationID: "invalid-uuid-format-not-right",
+			wantErr:    true,
+			errMsg:     "locationId must be a valid UUID",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			unit := &Unit{
+				LocationID: tt.locationID,
+			}
+
+			err := unit.ValidateLocationID()
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }

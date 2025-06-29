@@ -21,8 +21,17 @@ func (m *MockUnitRepository) Create(ctx context.Context, unit *models.Unit) erro
 }
 
 // GetByKey mocks the GetByKey method
-func (m *MockUnitRepository) GetByKey(ctx context.Context, id, accountID string) (*models.Unit, error) {
-	args := m.Called(ctx, id, accountID)
+func (m *MockUnitRepository) GetByKey(ctx context.Context, accountID, locationID string) (*models.Unit, error) {
+	args := m.Called(ctx, accountID, locationID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.Unit), args.Error(1)
+}
+
+// GetByID mocks the GetByID method
+func (m *MockUnitRepository) GetByID(ctx context.Context, accountID, unitID string) (*models.Unit, error) {
+	args := m.Called(ctx, accountID, unitID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -36,8 +45,8 @@ func (m *MockUnitRepository) Update(ctx context.Context, unit *models.Unit) erro
 }
 
 // Delete mocks the Delete method
-func (m *MockUnitRepository) Delete(ctx context.Context, id, accountID string) error {
-	args := m.Called(ctx, id, accountID)
+func (m *MockUnitRepository) Delete(ctx context.Context, accountID, locationID string) error {
+	args := m.Called(ctx, accountID, locationID)
 	return args.Error(0)
 }
 
@@ -51,7 +60,7 @@ func (m *MockUnitRepository) List(ctx context.Context, input *appsync.ListUnitsI
 }
 
 // Exists mocks the Exists method
-func (m *MockUnitRepository) Exists(ctx context.Context, id, accountID string) (bool, error) {
-	args := m.Called(ctx, id, accountID)
+func (m *MockUnitRepository) Exists(ctx context.Context, accountID, locationID string) (bool, error) {
+	args := m.Called(ctx, accountID, locationID)
 	return args.Bool(0), args.Error(1)
 }
