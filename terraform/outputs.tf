@@ -15,7 +15,7 @@ output "dynamodb_table_id" {
 
 output "dynamodb_gsi_name" {
   description = "Name of the DynamoDB Global Secondary Index"
-  value       = "sk-index"
+  value       = "id-index"
 }
 
 output "lambda_function_name" {

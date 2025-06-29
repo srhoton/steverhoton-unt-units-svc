@@ -36,27 +36,27 @@ func (r *DynamoDBUnitRepository) encodePaginationToken(lastKey map[string]types.
 	if lastKey == nil {
 		return "", nil
 	}
-	
+
 	// Convert the LastEvaluatedKey to a simple map[string]interface{}
 	tokenData := make(map[string]interface{})
-	for key, value := range lastKey {
+	for k, value := range lastKey {
 		switch v := value.(type) {
 		case *types.AttributeValueMemberS:
-			tokenData[key] = v.Value
+			tokenData[k] = v.Value
 		case *types.AttributeValueMemberN:
-			tokenData[key] = v.Value
+			tokenData[k] = v.Value
 		default:
 			// For other types, convert to string representation
-			tokenData[key] = fmt.Sprintf("%v", value)
+			tokenData[k] = fmt.Sprintf("%v", value)
 		}
 	}
-	
+
 	// Marshal to JSON
 	jsonBytes, err := json.Marshal(tokenData)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal token data: %w", err)
 	}
-	
+
 	// Encode to base64
 	return base64.StdEncoding.EncodeToString(jsonBytes), nil
 }
@@ -66,46 +66,46 @@ func (r *DynamoDBUnitRepository) decodePaginationToken(token string) (map[string
 	if token == "" {
 		return nil, nil
 	}
-	
+
 	// Decode from base64
 	jsonBytes, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode token: %w", err)
 	}
-	
+
 	// Unmarshal from JSON
 	var tokenData map[string]interface{}
 	err = json.Unmarshal(jsonBytes, &tokenData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal token data: %w", err)
 	}
-	
+
 	// Convert back to DynamoDB AttributeValue format
 	lastKey := make(map[string]types.AttributeValue)
-	for key, value := range tokenData {
+	for k, value := range tokenData {
 		switch v := value.(type) {
 		case string:
 			// Try to determine if it's a number or string
-			if key == "pk" || key == "sk" {
-				// These are typically strings
-				lastKey[key] = &types.AttributeValueMemberS{Value: v}
+			if k == "pk" || k == "sk" {
+				// PK is accountID (string), SK is locationID (string)
+				lastKey[k] = &types.AttributeValueMemberS{Value: v}
 			} else {
 				// For other fields, try to parse as number first
 				if _, err := strconv.ParseFloat(v, 64); err == nil {
-					lastKey[key] = &types.AttributeValueMemberN{Value: v}
+					lastKey[k] = &types.AttributeValueMemberN{Value: v}
 				} else {
-					lastKey[key] = &types.AttributeValueMemberS{Value: v}
+					lastKey[k] = &types.AttributeValueMemberS{Value: v}
 				}
 			}
 		case float64:
 			// JSON numbers become float64
-			lastKey[key] = &types.AttributeValueMemberN{Value: fmt.Sprintf("%.0f", v)}
+			lastKey[k] = &types.AttributeValueMemberN{Value: fmt.Sprintf("%.0f", v)}
 		default:
 			// Fallback to string representation
-			lastKey[key] = &types.AttributeValueMemberS{Value: fmt.Sprintf("%v", v)}
+			lastKey[k] = &types.AttributeValueMemberS{Value: fmt.Sprintf("%v", v)}
 		}
 	}
-	
+
 	return lastKey, nil
 }
 
@@ -113,6 +113,11 @@ func (r *DynamoDBUnitRepository) decodePaginationToken(token string) (map[string
 func (r *DynamoDBUnitRepository) Create(ctx context.Context, unit *models.Unit) error {
 	if unit == nil {
 		return errors.New("unit cannot be nil")
+	}
+
+	// Validate locationID
+	if err := unit.ValidateLocationID(); err != nil {
+		return fmt.Errorf("validation failed: %w", err)
 	}
 
 	// Generate UUID if not already set
@@ -129,18 +134,18 @@ func (r *DynamoDBUnitRepository) Create(ctx context.Context, unit *models.Unit) 
 		return fmt.Errorf("failed to marshal unit: %w", err)
 	}
 
-	// Create the item with condition that it doesn't already exist
+	// Create the item with condition that the key doesn't already exist
 	input := &dynamodb.PutItemInput{
 		TableName:           aws.String(r.tableName),
 		Item:                item,
-		ConditionExpression: aws.String("attribute_not_exists(pk)"),
+		ConditionExpression: aws.String("attribute_not_exists(pk) AND attribute_not_exists(sk)"),
 	}
 
 	_, err = r.client.PutItem(ctx, input)
 	if err != nil {
 		var conditionalCheckFailedException *types.ConditionalCheckFailedException
 		if errors.As(err, &conditionalCheckFailedException) {
-			return fmt.Errorf("unit with id %s already exists for account %s", unit.ID, unit.AccountID)
+			return fmt.Errorf("unit already exists for account %s and location %s", unit.AccountID, unit.LocationID)
 		}
 		return fmt.Errorf("failed to create unit: %w", err)
 	}
@@ -148,18 +153,18 @@ func (r *DynamoDBUnitRepository) Create(ctx context.Context, unit *models.Unit) 
 	return nil
 }
 
-// GetByKey retrieves a unit by its composite primary key
-func (r *DynamoDBUnitRepository) GetByKey(ctx context.Context, id, accountID string) (*models.Unit, error) {
-	if id == "" {
-		return nil, errors.New("id is required")
-	}
+// GetByKey retrieves a unit by its composite primary key (accountID + locationID)
+func (r *DynamoDBUnitRepository) GetByKey(ctx context.Context, accountID, locationID string) (*models.Unit, error) {
 	if accountID == "" {
 		return nil, errors.New("accountID is required")
 	}
+	if locationID == "" {
+		return nil, errors.New("locationID is required")
+	}
 
 	key := map[string]types.AttributeValue{
-		"pk": &types.AttributeValueMemberS{Value: id},
-		"sk": &types.AttributeValueMemberS{Value: accountID},
+		"pk": &types.AttributeValueMemberS{Value: accountID},
+		"sk": &types.AttributeValueMemberS{Value: locationID},
 	}
 
 	input := &dynamodb.GetItemInput{
@@ -190,10 +195,56 @@ func (r *DynamoDBUnitRepository) GetByKey(ctx context.Context, id, accountID str
 	return &unit, nil
 }
 
+// GetByID retrieves a unit by its unique ID within an account using the ID GSI
+func (r *DynamoDBUnitRepository) GetByID(ctx context.Context, accountID, unitID string) (*models.Unit, error) {
+	if accountID == "" {
+		return nil, errors.New("accountID is required")
+	}
+	if unitID == "" {
+		return nil, errors.New("unitID is required")
+	}
+
+	// Query the GSI to find the unit by ID within the account
+	queryInput := &dynamodb.QueryInput{
+		TableName:              aws.String(r.tableName),
+		IndexName:              aws.String("id-index"),
+		KeyConditionExpression: aws.String("id = :unitId"),
+		FilterExpression:       aws.String("pk = :accountId AND (attribute_not_exists(deletedAt) OR deletedAt = :zero)"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":unitId":    &types.AttributeValueMemberS{Value: unitID},
+			":accountId": &types.AttributeValueMemberS{Value: accountID},
+			":zero":      &types.AttributeValueMemberN{Value: "0"},
+		},
+		Limit: aws.Int32(1),
+	}
+
+	result, err := r.client.Query(ctx, queryInput)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query unit by ID: %w", err)
+	}
+
+	if len(result.Items) == 0 {
+		return nil, nil // Unit not found
+	}
+
+	var unit models.Unit
+	err = attributevalue.UnmarshalMap(result.Items[0], &unit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal unit: %w", err)
+	}
+
+	return &unit, nil
+}
+
 // Update updates an existing unit in DynamoDB
 func (r *DynamoDBUnitRepository) Update(ctx context.Context, unit *models.Unit) error {
 	if unit == nil {
 		return errors.New("unit cannot be nil")
+	}
+
+	// Validate locationID
+	if err := unit.ValidateLocationID(); err != nil {
+		return fmt.Errorf("validation failed: %w", err)
 	}
 
 	// Update timestamp
@@ -209,7 +260,7 @@ func (r *DynamoDBUnitRepository) Update(ctx context.Context, unit *models.Unit) 
 	input := &dynamodb.PutItemInput{
 		TableName:           aws.String(r.tableName),
 		Item:                item,
-		ConditionExpression: aws.String("attribute_exists(suggestedVin) AND (attribute_not_exists(deletedAt) OR deletedAt = :zero)"),
+		ConditionExpression: aws.String("attribute_exists(pk) AND attribute_exists(sk) AND (attribute_not_exists(deletedAt) OR deletedAt = :zero)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":zero": &types.AttributeValueMemberN{Value: "0"},
 		},
@@ -219,7 +270,7 @@ func (r *DynamoDBUnitRepository) Update(ctx context.Context, unit *models.Unit) 
 	if err != nil {
 		var conditionalCheckFailedException *types.ConditionalCheckFailedException
 		if errors.As(err, &conditionalCheckFailedException) {
-			return fmt.Errorf("unit with suggestedVin %s does not exist or is deleted", unit.SuggestedVin)
+			return fmt.Errorf("unit does not exist or is deleted for account %s and location %s", unit.AccountID, unit.LocationID)
 		}
 		return fmt.Errorf("failed to update unit: %w", err)
 	}
@@ -228,27 +279,28 @@ func (r *DynamoDBUnitRepository) Update(ctx context.Context, unit *models.Unit) 
 }
 
 // Delete soft deletes a unit by setting deletedAt timestamp
-func (r *DynamoDBUnitRepository) Delete(ctx context.Context, id, accountID string) error {
-	if id == "" {
-		return errors.New("id is required")
-	}
+func (r *DynamoDBUnitRepository) Delete(ctx context.Context, accountID, locationID string) error {
 	if accountID == "" {
 		return errors.New("accountID is required")
 	}
+	if locationID == "" {
+		return errors.New("locationID is required")
+	}
 
 	// First, check if the unit exists and get current data
-	unit, err := r.GetByKey(ctx, id, accountID)
+	unit, err := r.GetByKey(ctx, accountID, locationID)
 	if err != nil {
 		return fmt.Errorf("failed to check unit existence: %w", err)
 	}
 	if unit == nil {
-		return fmt.Errorf("unit with id %s not found for account %s", id, accountID)
+		return fmt.Errorf("unit not found for account %s and location %s", accountID, locationID)
 	}
 
-	// Mark as deleted
+	// Mark as deleted and update timestamp
 	unit.MarkDeleted()
+	unit.SetTimestamps()
 
-	// Update the item
+	// Update the existing item with deletedAt set
 	item, err := attributevalue.MarshalMap(unit)
 	if err != nil {
 		return fmt.Errorf("failed to marshal unit: %w", err)
@@ -285,8 +337,7 @@ func (r *DynamoDBUnitRepository) List(ctx context.Context, input *appsync.ListUn
 	// Build the query input to get all units for the account
 	queryInput := &dynamodb.QueryInput{
 		TableName:              aws.String(r.tableName),
-		IndexName:              aws.String("sk-index"), // GSI on SK (AccountID)
-		KeyConditionExpression: aws.String("sk = :accountId"),
+		KeyConditionExpression: aws.String("pk = :accountId"),
 		FilterExpression:       aws.String("attribute_not_exists(deletedAt) OR deletedAt = :zero"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":accountId": &types.AttributeValueMemberS{Value: input.AccountID},
@@ -339,43 +390,19 @@ func (r *DynamoDBUnitRepository) List(ctx context.Context, input *appsync.ListUn
 }
 
 // Exists checks if a unit exists by its primary key
-func (r *DynamoDBUnitRepository) Exists(ctx context.Context, id, accountID string) (bool, error) {
-	if id == "" {
-		return false, errors.New("id is required")
-	}
+func (r *DynamoDBUnitRepository) Exists(ctx context.Context, accountID, locationID string) (bool, error) {
 	if accountID == "" {
 		return false, errors.New("accountID is required")
 	}
-
-	key := map[string]types.AttributeValue{
-		"pk": &types.AttributeValueMemberS{Value: id},
-		"sk": &types.AttributeValueMemberS{Value: accountID},
+	if locationID == "" {
+		return false, errors.New("locationID is required")
 	}
 
-	input := &dynamodb.GetItemInput{
-		TableName:            aws.String(r.tableName),
-		Key:                  key,
-		ProjectionExpression: aws.String("pk, sk, deletedAt"),
-	}
-
-	result, err := r.client.GetItem(ctx, input)
+	// Use GetByKey which handles the logic
+	unit, err := r.GetByKey(ctx, accountID, locationID)
 	if err != nil {
 		return false, fmt.Errorf("failed to check unit existence: %w", err)
 	}
 
-	if result.Item == nil {
-		return false, nil
-	}
-
-	// Check if the unit is not soft deleted
-	if deletedAtValue, exists := result.Item["deletedAt"]; exists {
-		if nVal, ok := deletedAtValue.(*types.AttributeValueMemberN); ok {
-			deletedAt, err := strconv.ParseInt(nVal.Value, 10, 64)
-			if err == nil && deletedAt > 0 {
-				return false, nil // Unit is soft deleted
-			}
-		}
-	}
-
-	return true, nil
+	return unit != nil, nil
 }

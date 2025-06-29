@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -24,8 +25,9 @@ type AcesAttribute struct {
 // Unit represents a commercial vehicle type unit in DynamoDB
 type Unit struct {
 	// DynamoDB key fields
-	ID        string `json:"id" dynamodbav:"pk"`        // Primary Key (UUID)
-	AccountID string `json:"accountId" dynamodbav:"sk"` // Sort Key
+	ID         string `json:"id" dynamodbav:"id"`         // Unit UUID
+	AccountID  string `json:"accountId" dynamodbav:"pk"`  // Primary Key
+	LocationID string `json:"locationId" dynamodbav:"sk"` // Sort Key
 
 	// Core identification fields
 	SuggestedVin      string `json:"suggestedVin" dynamodbav:"suggestedVin"`
@@ -238,8 +240,8 @@ type Unit struct {
 // GetKey returns the composite primary key for DynamoDB operations (PK + SK)
 func (u *Unit) GetKey() map[string]types.AttributeValue {
 	key, _ := attributevalue.MarshalMap(map[string]interface{}{
-		"pk": u.ID,        // Primary Key (UUID)
-		"sk": u.AccountID, // Sort Key (AccountID)
+		"pk": u.AccountID,  // Primary Key (AccountID)
+		"sk": u.LocationID, // Sort Key (LocationID)
 	})
 	return key
 }
@@ -266,4 +268,15 @@ func (u *Unit) MarkDeleted() {
 // GenerateID generates a new UUID for the unit's primary key
 func (u *Unit) GenerateID() {
 	u.ID = uuid.New().String()
+}
+
+// ValidateLocationID validates that the LocationID is a valid UUID
+func (u *Unit) ValidateLocationID() error {
+	if u.LocationID == "" {
+		return fmt.Errorf("locationId is required")
+	}
+	if _, err := uuid.Parse(u.LocationID); err != nil {
+		return fmt.Errorf("locationId must be a valid UUID: %w", err)
+	}
+	return nil
 }

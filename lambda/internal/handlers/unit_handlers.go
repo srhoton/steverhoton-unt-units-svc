@@ -49,18 +49,19 @@ func (h *UnitHandlers) HandleCreate(ctx context.Context, event *appsync.AppSyncE
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "SuggestedVin is required", ""), nil
 	}
 
-	// Set the AccountID in the embedded unit
-	input.Unit.AccountID = input.AccountID
+	// Since Unit is embedded in CreateUnitInput, extract the Unit fields
+	unit := input.Unit
+	unit.AccountID = input.AccountID
 
 	// Attempt to create the unit
-	err = h.repo.Create(ctx, &input.Unit)
+	err = h.repo.Create(ctx, &unit)
 	if err != nil {
 		log.Printf("Error creating unit: %v", err)
 		return appsync.NewErrorResponse("CREATE_FAILED", "Failed to create unit", err.Error()), nil
 	}
 
-	log.Printf("Unit created successfully with ID: %s for account: %s", input.Unit.ID, input.Unit.AccountID)
-	return appsync.NewSuccessResponse(input.Unit, "Unit created successfully"), nil
+	log.Printf("Unit created successfully with ID: %s for account: %s", unit.ID, unit.AccountID)
+	return appsync.NewSuccessResponse(unit, "Unit created successfully"), nil
 }
 
 // HandleRead handles unit retrieval requests
@@ -91,7 +92,7 @@ func (h *UnitHandlers) HandleRead(ctx context.Context, event *appsync.AppSyncEve
 	}
 
 	// Retrieve the unit
-	unit, err := h.repo.GetByKey(ctx, input.ID, input.AccountID)
+	unit, err := h.repo.GetByID(ctx, input.AccountID, input.ID)
 	if err != nil {
 		log.Printf("Error retrieving unit: %v", err)
 		return appsync.NewErrorResponse("READ_FAILED", "Failed to retrieve unit", err.Error()), nil
@@ -135,7 +136,7 @@ func (h *UnitHandlers) HandleUpdate(ctx context.Context, event *appsync.AppSyncE
 	// Note: suggestedVin is not required for updates as they can be partial
 
 	// Check if the unit exists before attempting to update
-	existingUnit, err := h.repo.GetByKey(ctx, input.ID, input.AccountID)
+	existingUnit, err := h.repo.GetByID(ctx, input.AccountID, input.ID)
 	if err != nil {
 		log.Printf("Error checking if unit exists: %v", err)
 		return appsync.NewErrorResponse("UPDATE_FAILED", "Failed to verify unit existence", err.Error()), nil
@@ -147,7 +148,7 @@ func (h *UnitHandlers) HandleUpdate(ctx context.Context, event *appsync.AppSyncE
 
 	// Merge the update data with the existing unit (partial update)
 	updatedUnit := *existingUnit // Copy existing unit
-	
+
 	// Apply only the fields that were provided in the input
 	if input.SuggestedVin != "" {
 		updatedUnit.SuggestedVin = input.SuggestedVin
@@ -186,7 +187,7 @@ func (h *UnitHandlers) HandleUpdate(ctx context.Context, event *appsync.AppSyncE
 		updatedUnit.VehicleType = input.VehicleType
 	}
 	// Add more fields as needed for the update...
-	
+
 	// Ensure the unit key matches the input
 	updatedUnit.ID = input.ID
 	updatedUnit.AccountID = input.AccountID
@@ -229,8 +230,19 @@ func (h *UnitHandlers) HandleDelete(ctx context.Context, event *appsync.AppSyncE
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "AccountID is required", ""), nil
 	}
 
+	// First, get the unit to find its locationID
+	unit, err := h.repo.GetByID(ctx, input.AccountID, input.ID)
+	if err != nil {
+		log.Printf("Error finding unit to delete: %v", err)
+		return appsync.NewErrorResponse("DELETE_FAILED", "Failed to find unit for deletion", err.Error()), nil
+	}
+	if unit == nil {
+		log.Printf("Unit not found with ID: %s for account: %s", input.ID, input.AccountID)
+		return appsync.NewErrorResponse("NOT_FOUND", "Unit not found", ""), nil
+	}
+
 	// Attempt to delete the unit
-	err = h.repo.Delete(ctx, input.ID, input.AccountID)
+	err = h.repo.Delete(ctx, input.AccountID, unit.LocationID)
 	if err != nil {
 		log.Printf("Error deleting unit: %v", err)
 		return appsync.NewErrorResponse("DELETE_FAILED", "Failed to delete unit", err.Error()), nil
