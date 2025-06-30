@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/steverhoton/unt-units-svc/internal/models"
 	"github.com/steverhoton/unt-units-svc/internal/repository"
 	"github.com/steverhoton/unt-units-svc/pkg/appsync"
 )
@@ -30,7 +31,7 @@ func (h *UnitHandlers) HandleCreate(ctx context.Context, event *appsync.AppSyncE
 	args, err := event.ParseArguments()
 	if err != nil {
 		log.Printf("Error parsing arguments: %v", err)
-		return appsync.NewErrorResponse("INVALID_INPUT", "Invalid input parameters", err.Error()), nil
+		return appsync.NewErrorResponse("INVALID_INPUT", "Invalid input parameters", ""), nil
 	}
 
 	input, ok := args.(appsync.CreateUnitInput)
@@ -44,24 +45,64 @@ func (h *UnitHandlers) HandleCreate(ctx context.Context, event *appsync.AppSyncE
 		log.Printf("Missing required field: accountId")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "AccountID is required", ""), nil
 	}
-	if input.SuggestedVin == "" {
-		log.Printf("Missing required field: suggestedVin")
-		return appsync.NewErrorResponse("VALIDATION_ERROR", "SuggestedVin is required", ""), nil
+	if input.UnitType == "" {
+		log.Printf("Missing required field: unitType")
+		return appsync.NewErrorResponse("VALIDATION_ERROR", "UnitType is required", ""), nil
 	}
 
-	// Since Unit is embedded in CreateUnitInput, extract the Unit fields
-	unit := input.Unit
+	// Validate that the unitType corresponds to an available schema
+	availableTypes, err := models.GetAvailableUnitTypes()
+	if err != nil {
+		log.Printf("Error getting available unit types: %v", err)
+		return appsync.NewErrorResponse("INTERNAL_ERROR", "Failed to validate unit type", ""), nil
+	}
+	
+	validType := false
+	for _, availableType := range availableTypes {
+		if availableType == input.UnitType {
+			validType = true
+			break
+		}
+	}
+	if !validType {
+		log.Printf("Invalid unit type: %s", input.UnitType)
+		return appsync.NewErrorResponse("VALIDATION_ERROR", "Invalid unit type", ""), nil
+	}
+
+	// Create dynamic unit
+	unit, err := models.NewDynamicUnit(input.UnitType)
+	if err != nil {
+		log.Printf("Error creating dynamic unit: %v", err)
+		return appsync.NewErrorResponse("VALIDATION_ERROR", "Failed to create unit", ""), nil
+	}
+
+	// Set account ID and generate ID
 	unit.AccountID = input.AccountID
+	unit.GenerateID()
+
+	// Validate and set data
+	err = unit.ValidateAndSetData(input.Data)
+	if err != nil {
+		log.Printf("Error validating unit data: %v", err)
+		return appsync.NewErrorResponse("VALIDATION_ERROR", "Data validation failed", ""), nil
+	}
 
 	// Attempt to create the unit
-	err = h.repo.Create(ctx, &unit)
+	err = h.repo.Create(ctx, unit)
 	if err != nil {
 		log.Printf("Error creating unit: %v", err)
-		return appsync.NewErrorResponse("CREATE_FAILED", "Failed to create unit", err.Error()), nil
+		return appsync.NewErrorResponse("CREATE_FAILED", "Failed to create unit", ""), nil
+	}
+
+	// Convert to map for response
+	responseData, err := unit.ToMap()
+	if err != nil {
+		log.Printf("Error converting unit to response: %v", err)
+		return appsync.NewErrorResponse("INTERNAL_ERROR", "Failed to format response", ""), nil
 	}
 
 	log.Printf("Unit created successfully with ID: %s for account: %s", unit.ID, unit.AccountID)
-	return appsync.NewSuccessResponse(unit, "Unit created successfully"), nil
+	return appsync.NewSuccessResponse(responseData, "Unit created successfully"), nil
 }
 
 // HandleRead handles unit retrieval requests
@@ -72,7 +113,7 @@ func (h *UnitHandlers) HandleRead(ctx context.Context, event *appsync.AppSyncEve
 	args, err := event.ParseArguments()
 	if err != nil {
 		log.Printf("Error parsing arguments: %v", err)
-		return appsync.NewErrorResponse("INVALID_INPUT", "Invalid input parameters", err.Error()), nil
+		return appsync.NewErrorResponse("INVALID_INPUT", "Invalid input parameters", ""), nil
 	}
 
 	input, ok := args.(appsync.GetUnitInput)
@@ -90,21 +131,32 @@ func (h *UnitHandlers) HandleRead(ctx context.Context, event *appsync.AppSyncEve
 		log.Printf("Missing required field: accountId")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "AccountID is required", ""), nil
 	}
+	if input.UnitType == "" {
+		log.Printf("Missing required field: unitType")
+		return appsync.NewErrorResponse("VALIDATION_ERROR", "UnitType is required", ""), nil
+	}
 
 	// Retrieve the unit
-	unit, err := h.repo.GetByID(ctx, input.AccountID, input.ID)
+	unit, err := h.repo.GetByID(ctx, input.AccountID, input.UnitType, input.ID)
 	if err != nil {
 		log.Printf("Error retrieving unit: %v", err)
-		return appsync.NewErrorResponse("READ_FAILED", "Failed to retrieve unit", err.Error()), nil
+		return appsync.NewErrorResponse("READ_FAILED", "Failed to retrieve unit", ""), nil
 	}
 
 	if unit == nil {
-		log.Printf("Unit not found with ID: %s for account: %s", input.ID, input.AccountID)
+		log.Printf("Unit not found with ID: %s, unitType: %s for account: %s", input.ID, input.UnitType, input.AccountID)
 		return appsync.NewErrorResponse("NOT_FOUND", "Unit not found", ""), nil
 	}
 
+	// Convert to map for response
+	responseData, err := unit.ToMap()
+	if err != nil {
+		log.Printf("Error converting unit to response: %v", err)
+		return appsync.NewErrorResponse("INTERNAL_ERROR", "Failed to format response", ""), nil
+	}
+
 	log.Printf("Unit retrieved successfully with ID: %s for account: %s", unit.ID, unit.AccountID)
-	return appsync.NewSuccessResponse(unit, "Unit retrieved successfully"), nil
+	return appsync.NewSuccessResponse(responseData, "Unit retrieved successfully"), nil
 }
 
 // HandleUpdate handles unit update requests
@@ -115,7 +167,7 @@ func (h *UnitHandlers) HandleUpdate(ctx context.Context, event *appsync.AppSyncE
 	args, err := event.ParseArguments()
 	if err != nil {
 		log.Printf("Error parsing arguments: %v", err)
-		return appsync.NewErrorResponse("INVALID_INPUT", "Invalid input parameters", err.Error()), nil
+		return appsync.NewErrorResponse("INVALID_INPUT", "Invalid input parameters", ""), nil
 	}
 
 	input, ok := args.(appsync.UpdateUnitInput)
@@ -124,7 +176,7 @@ func (h *UnitHandlers) HandleUpdate(ctx context.Context, event *appsync.AppSyncE
 		return appsync.NewErrorResponse("INVALID_INPUT", "Invalid input type for update operation", ""), nil
 	}
 
-	// Validate required fields for update (only ID and AccountID are required)
+	// Validate required fields for update
 	if input.ID == "" {
 		log.Printf("Missing required field: id")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "ID is required", ""), nil
@@ -133,74 +185,79 @@ func (h *UnitHandlers) HandleUpdate(ctx context.Context, event *appsync.AppSyncE
 		log.Printf("Missing required field: accountId")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "AccountID is required", ""), nil
 	}
-	// Note: suggestedVin is not required for updates as they can be partial
+
+	if input.UnitType == "" {
+		log.Printf("Missing required field: unitType")
+		return appsync.NewErrorResponse("VALIDATION_ERROR", "UnitType is required", ""), nil
+	}
+
+	// Validate that the unitType corresponds to an available schema
+	availableTypes, err := models.GetAvailableUnitTypes()
+	if err != nil {
+		log.Printf("Error getting available unit types: %v", err)
+		return appsync.NewErrorResponse("INTERNAL_ERROR", "Failed to validate unit type", ""), nil
+	}
+	
+	validType := false
+	for _, availableType := range availableTypes {
+		if availableType == input.UnitType {
+			validType = true
+			break
+		}
+	}
+	if !validType {
+		log.Printf("Invalid unit type: %s", input.UnitType)
+		return appsync.NewErrorResponse("VALIDATION_ERROR", "Invalid unit type", ""), nil
+	}
 
 	// Check if the unit exists before attempting to update
-	existingUnit, err := h.repo.GetByID(ctx, input.AccountID, input.ID)
+	existingUnit, err := h.repo.GetByID(ctx, input.AccountID, input.UnitType, input.ID)
 	if err != nil {
 		log.Printf("Error checking if unit exists: %v", err)
-		return appsync.NewErrorResponse("UPDATE_FAILED", "Failed to verify unit existence", err.Error()), nil
+		return appsync.NewErrorResponse("UPDATE_FAILED", "Failed to verify unit existence", ""), nil
 	}
+
 	if existingUnit == nil {
-		log.Printf("Unit not found with ID: %s for account: %s", input.ID, input.AccountID)
+		log.Printf("Unit not found with ID: %s, unitType: %s for account: %s", input.ID, input.UnitType, input.AccountID)
 		return appsync.NewErrorResponse("NOT_FOUND", "Unit not found", ""), nil
 	}
 
-	// Merge the update data with the existing unit (partial update)
-	updatedUnit := *existingUnit // Copy existing unit
+	// Merge the update data with existing data
+	mergedData := make(map[string]interface{})
+	
+	// Start with existing data
+	for k, v := range existingUnit.Data {
+		mergedData[k] = v
+	}
+	
+	// Override with new data
+	for k, v := range input.Data {
+		mergedData[k] = v
+	}
 
-	// Apply only the fields that were provided in the input
-	if input.SuggestedVin != "" {
-		updatedUnit.SuggestedVin = input.SuggestedVin
+	// Validate and set the merged data
+	err = existingUnit.ValidateAndSetData(mergedData)
+	if err != nil {
+		log.Printf("Error validating updated unit data: %v", err)
+		return appsync.NewErrorResponse("VALIDATION_ERROR", "Data validation failed", ""), nil
 	}
-	if input.ErrorCode != "" {
-		updatedUnit.ErrorCode = input.ErrorCode
-	}
-	if input.PossibleValues != "" {
-		updatedUnit.PossibleValues = input.PossibleValues
-	}
-	if input.ErrorText != "" {
-		updatedUnit.ErrorText = input.ErrorText
-	}
-	if input.VehicleDescriptor != "" {
-		updatedUnit.VehicleDescriptor = input.VehicleDescriptor
-	}
-	if input.Note != "" {
-		updatedUnit.Note = input.Note
-	}
-	if input.Make != "" {
-		updatedUnit.Make = input.Make
-	}
-	if input.ManufacturerName != "" {
-		updatedUnit.ManufacturerName = input.ManufacturerName
-	}
-	if input.Model != "" {
-		updatedUnit.Model = input.Model
-	}
-	if input.ModelYear != "" {
-		updatedUnit.ModelYear = input.ModelYear
-	}
-	if input.Series != "" {
-		updatedUnit.Series = input.Series
-	}
-	if input.VehicleType != "" {
-		updatedUnit.VehicleType = input.VehicleType
-	}
-	// Add more fields as needed for the update...
-
-	// Ensure the unit key matches the input
-	updatedUnit.ID = input.ID
-	updatedUnit.AccountID = input.AccountID
 
 	// Attempt to update the unit
-	err = h.repo.Update(ctx, &updatedUnit)
+	err = h.repo.Update(ctx, existingUnit)
 	if err != nil {
 		log.Printf("Error updating unit: %v", err)
-		return appsync.NewErrorResponse("UPDATE_FAILED", "Failed to update unit", err.Error()), nil
+		return appsync.NewErrorResponse("UPDATE_FAILED", "Failed to update unit", ""), nil
 	}
 
-	log.Printf("Unit updated successfully with ID: %s for account: %s", updatedUnit.ID, updatedUnit.AccountID)
-	return appsync.NewSuccessResponse(updatedUnit, "Unit updated successfully"), nil
+	// Convert to map for response
+	responseData, err := existingUnit.ToMap()
+	if err != nil {
+		log.Printf("Error converting unit to response: %v", err)
+		return appsync.NewErrorResponse("INTERNAL_ERROR", "Failed to format response", ""), nil
+	}
+
+	log.Printf("Unit updated successfully with ID: %s for account: %s", existingUnit.ID, existingUnit.AccountID)
+	return appsync.NewSuccessResponse(responseData, "Unit updated successfully"), nil
 }
 
 // HandleDelete handles unit deletion requests
@@ -211,7 +268,7 @@ func (h *UnitHandlers) HandleDelete(ctx context.Context, event *appsync.AppSyncE
 	args, err := event.ParseArguments()
 	if err != nil {
 		log.Printf("Error parsing arguments: %v", err)
-		return appsync.NewErrorResponse("INVALID_INPUT", "Invalid input parameters", err.Error()), nil
+		return appsync.NewErrorResponse("INVALID_INPUT", "Invalid input parameters", ""), nil
 	}
 
 	input, ok := args.(appsync.DeleteUnitInput)
@@ -229,32 +286,26 @@ func (h *UnitHandlers) HandleDelete(ctx context.Context, event *appsync.AppSyncE
 		log.Printf("Missing required field: accountId")
 		return appsync.NewErrorResponse("VALIDATION_ERROR", "AccountID is required", ""), nil
 	}
-
-	// First, get the unit to find its locationID
-	unit, err := h.repo.GetByID(ctx, input.AccountID, input.ID)
-	if err != nil {
-		log.Printf("Error finding unit to delete: %v", err)
-		return appsync.NewErrorResponse("DELETE_FAILED", "Failed to find unit for deletion", err.Error()), nil
-	}
-	if unit == nil {
-		log.Printf("Unit not found with ID: %s for account: %s", input.ID, input.AccountID)
-		return appsync.NewErrorResponse("NOT_FOUND", "Unit not found", ""), nil
+	if input.UnitType == "" {
+		log.Printf("Missing required field: unitType")
+		return appsync.NewErrorResponse("VALIDATION_ERROR", "UnitType is required", ""), nil
 	}
 
 	// Attempt to delete the unit
-	err = h.repo.Delete(ctx, input.AccountID, unit.LocationID)
+	err = h.repo.Delete(ctx, input.AccountID, input.UnitType, input.ID)
 	if err != nil {
 		log.Printf("Error deleting unit: %v", err)
-		return appsync.NewErrorResponse("DELETE_FAILED", "Failed to delete unit", err.Error()), nil
+		return appsync.NewErrorResponse("DELETE_FAILED", "Failed to delete unit", ""), nil
 	}
 
 	response := map[string]interface{}{
 		"id":        input.ID,
 		"accountId": input.AccountID,
+		"unitType":  input.UnitType,
 		"deleted":   true,
 	}
 
-	log.Printf("Unit deleted successfully with ID: %s for account: %s", input.ID, input.AccountID)
+	log.Printf("Unit deleted successfully with ID: %s, unitType: %s for account: %s", input.ID, input.UnitType, input.AccountID)
 	return appsync.NewSuccessResponse(response, "Unit deleted successfully"), nil
 }
 

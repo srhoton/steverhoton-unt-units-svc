@@ -2,8 +2,6 @@ package appsync
 
 import (
 	"encoding/json"
-
-	"github.com/steverhoton/unt-units-svc/internal/models"
 )
 
 // AppSyncEvent represents the event structure from AppSync
@@ -77,32 +75,37 @@ const (
 
 // CreateUnitInput represents input for creating a unit
 type CreateUnitInput struct {
-	AccountID   string `json:"accountId"`
-	models.Unit        // Embed Unit fields directly
+	AccountID string                 `json:"accountId"`
+	UnitType  string                 `json:"unitType"`
+	Data      map[string]interface{} `json:"data"`
 }
 
 // UpdateUnitInput represents input for updating a unit
 type UpdateUnitInput struct {
-	ID          string `json:"id"`
-	AccountID   string `json:"accountId"`
-	models.Unit        // Embed Unit fields directly
+	ID        string                 `json:"id"`
+	AccountID string                 `json:"accountId"`
+	UnitType  string                 `json:"unitType"`
+	Data      map[string]interface{} `json:"data"`
 }
 
 // DeleteUnitInput represents input for deleting a unit
 type DeleteUnitInput struct {
 	ID        string `json:"id"`
 	AccountID string `json:"accountId"`
+	UnitType  string `json:"unitType"`
 }
 
 // GetUnitInput represents input for getting a single unit
 type GetUnitInput struct {
 	ID        string `json:"id"`
 	AccountID string `json:"accountId"`
+	UnitType  string `json:"unitType"`
 }
 
 // ListUnitsInput represents input for listing units
 type ListUnitsInput struct {
 	AccountID string  `json:"accountId"`
+	UnitType  *string `json:"unitType,omitempty"`
 	Limit     *int    `json:"limit,omitempty"`
 	NextToken *string `json:"nextToken,omitempty"`
 	Filter    *string `json:"filter,omitempty"`
@@ -125,9 +128,9 @@ type ErrorInfo struct {
 
 // ListUnitsResponse represents the response for list operations
 type ListUnitsResponse struct {
-	Items     []models.Unit `json:"items"`
-	NextToken *string       `json:"nextToken,omitempty"`
-	Count     int           `json:"count"`
+	Items     []map[string]interface{} `json:"items"`
+	NextToken *string                  `json:"nextToken,omitempty"`
+	Count     int                      `json:"count"`
 }
 
 // GetOperationType determines the operation type based on the field name
@@ -152,35 +155,45 @@ func (e *AppSyncEvent) GetOperationType() OperationType {
 func (e *AppSyncEvent) ParseArguments() (interface{}, error) {
 	switch e.GetOperationType() {
 	case OperationTypeCreate:
-		var input CreateUnitInput
-		if err := json.Unmarshal(e.Arguments, &input); err != nil {
+		var wrapper struct {
+			Input CreateUnitInput `json:"input"`
+		}
+		if err := json.Unmarshal(e.Arguments, &wrapper); err != nil {
 			return nil, err
 		}
-		return input, nil
+		return wrapper.Input, nil
 	case OperationTypeRead:
-		var input GetUnitInput
-		if err := json.Unmarshal(e.Arguments, &input); err != nil {
+		var wrapper struct {
+			Input GetUnitInput `json:"input"`
+		}
+		if err := json.Unmarshal(e.Arguments, &wrapper); err != nil {
 			return nil, err
 		}
-		return input, nil
+		return wrapper.Input, nil
 	case OperationTypeUpdate:
-		var input UpdateUnitInput
-		if err := json.Unmarshal(e.Arguments, &input); err != nil {
+		var wrapper struct {
+			Input UpdateUnitInput `json:"input"`
+		}
+		if err := json.Unmarshal(e.Arguments, &wrapper); err != nil {
 			return nil, err
 		}
-		return input, nil
+		return wrapper.Input, nil
 	case OperationTypeDelete:
-		var input DeleteUnitInput
-		if err := json.Unmarshal(e.Arguments, &input); err != nil {
+		var wrapper struct {
+			Input DeleteUnitInput `json:"input"`
+		}
+		if err := json.Unmarshal(e.Arguments, &wrapper); err != nil {
 			return nil, err
 		}
-		return input, nil
+		return wrapper.Input, nil
 	case OperationTypeList:
-		var input ListUnitsInput
-		if err := json.Unmarshal(e.Arguments, &input); err != nil {
+		var wrapper struct {
+			Input ListUnitsInput `json:"input"`
+		}
+		if err := json.Unmarshal(e.Arguments, &wrapper); err != nil {
 			return nil, err
 		}
-		return input, nil
+		return wrapper.Input, nil
 	default:
 		return nil, nil
 	}

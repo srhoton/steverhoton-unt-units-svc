@@ -29,7 +29,7 @@ func TestDynamoDBUnitRepository_PaginationTokenEncoding(t *testing.T) {
 			name: "string attributes",
 			lastKey: map[string]types.AttributeValue{
 				"pk": &types.AttributeValueMemberS{Value: "account-456"},
-				"sk": &types.AttributeValueMemberS{Value: "location-123"},
+				"sk": &types.AttributeValueMemberS{Value: "commercialVehicleType#test-id-123"},
 			},
 			expected: true,
 		},
@@ -37,7 +37,7 @@ func TestDynamoDBUnitRepository_PaginationTokenEncoding(t *testing.T) {
 			name: "mixed attributes with id",
 			lastKey: map[string]types.AttributeValue{
 				"pk":        &types.AttributeValueMemberS{Value: "account-456"},
-				"sk":        &types.AttributeValueMemberS{Value: "location-123"},
+				"sk":        &types.AttributeValueMemberS{Value: "commercialVehicleType#test-id-123"},
 				"id":        &types.AttributeValueMemberS{Value: "test-id-123"},
 				"createdAt": &types.AttributeValueMemberN{Value: "1609459200"},
 			},
@@ -134,7 +134,7 @@ func TestDynamoDBUnitRepository_PaginationTokenRoundTrip(t *testing.T) {
 	// Create a comprehensive last key that represents what DynamoDB might return
 	originalKey := map[string]types.AttributeValue{
 		"pk":        &types.AttributeValueMemberS{Value: "account-123"},
-		"sk":        &types.AttributeValueMemberS{Value: "550e8400-e29b-41d4-a716-446655440000"},
+		"sk":        &types.AttributeValueMemberS{Value: "commercialVehicleType#550e8400-e29b-41d4-a716-446655440000"},
 		"id":        &types.AttributeValueMemberS{Value: "unit-123"},
 		"createdAt": &types.AttributeValueMemberN{Value: "1640995200"},
 	}
@@ -166,7 +166,7 @@ func TestDynamoDBUnitRepository_PaginationTokenRoundTrip(t *testing.T) {
 	// Verify SK is correctly handled as string
 	skAttr, ok := decodedKey["sk"].(*types.AttributeValueMemberS)
 	require.True(t, ok)
-	assert.Equal(t, "550e8400-e29b-41d4-a716-446655440000", skAttr.Value)
+	assert.Equal(t, "commercialVehicleType#550e8400-e29b-41d4-a716-446655440000", skAttr.Value)
 
 	idAttr, ok := decodedKey["id"].(*types.AttributeValueMemberS)
 	require.True(t, ok)
@@ -178,15 +178,13 @@ func TestDynamoDBUnitRepository_PaginationTokenRoundTrip(t *testing.T) {
 	assert.NotEmpty(t, token, "Decoded token should not be empty")
 }
 
-func TestUnit_SoftDeleteFunctionality(t *testing.T) {
-	// Test the Unit model's soft delete functionality
-	unit := &models.Unit{
-		ID:           "test-unit-id",
-		AccountID:    "test-account-123",
-		SuggestedVin: "1HGBH41JXMN109186",
-		Make:         "Honda",
-		Model:        "Civic",
-	}
+func TestDynamicUnit_SoftDeleteFunctionality(t *testing.T) {
+	// Test the DynamicUnit model's soft delete functionality
+	unit, err := models.NewDynamicUnit("commercialVehicleType")
+	require.NoError(t, err)
+	
+	unit.ID = "test-unit-id"
+	unit.AccountID = "test-account-123"
 
 	// Initially, unit should not be deleted
 	assert.False(t, unit.IsDeleted())
@@ -205,13 +203,13 @@ func TestUnit_SoftDeleteFunctionality(t *testing.T) {
 	assert.Greater(t, unit.DeletedAt, now-10) // Within last 10 seconds
 }
 
-func TestUnit_SetTimestamps(t *testing.T) {
-	// Test the Unit model's timestamp functionality
-	unit := &models.Unit{
-		ID:           "test-unit-id",
-		AccountID:    "test-account-123",
-		SuggestedVin: "1HGBH41JXMN109186",
-	}
+func TestDynamicUnit_SetTimestamps(t *testing.T) {
+	// Test the DynamicUnit model's timestamp functionality
+	unit, err := models.NewDynamicUnit("commercialVehicleType")
+	require.NoError(t, err)
+	
+	unit.ID = "test-unit-id"
+	unit.AccountID = "test-account-123"
 
 	// Initially, timestamps should be zero
 	assert.Equal(t, int64(0), unit.CreatedAt)

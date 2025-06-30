@@ -6,8 +6,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/steverhoton/unt-units-svc/internal/models"
 )
 
 func TestAppSyncEvent_GetOperationType(t *testing.T) {
@@ -57,15 +55,14 @@ func TestAppSyncEvent_GetOperationType(t *testing.T) {
 }
 
 func TestAppSyncEvent_ParseArguments_Create(t *testing.T) {
-	unit := models.Unit{
-		SuggestedVin: "1HGBH41JXMN109186",
-		Make:         "Honda",
-		Model:        "Civic",
-	}
-
 	input := CreateUnitInput{
 		AccountID: "account-123",
-		Unit:      unit,
+		UnitType:  "commercialVehicleType",
+		Data: map[string]interface{}{
+			"suggestedVin": "1HGBH41JXMN109186",
+			"make":         "Honda",
+			"model":        "Civic",
+		},
 	}
 	argsJSON, err := json.Marshal(input)
 	require.NoError(t, err)
@@ -82,15 +79,17 @@ func TestAppSyncEvent_ParseArguments_Create(t *testing.T) {
 	require.True(t, ok)
 
 	assert.Equal(t, input.AccountID, parsedInput.AccountID)
-	assert.Equal(t, unit.SuggestedVin, parsedInput.Unit.SuggestedVin)
-	assert.Equal(t, unit.Make, parsedInput.Unit.Make)
-	assert.Equal(t, unit.Model, parsedInput.Unit.Model)
+	assert.Equal(t, input.UnitType, parsedInput.UnitType)
+	assert.Equal(t, input.Data["suggestedVin"], parsedInput.Data["suggestedVin"])
+	assert.Equal(t, input.Data["make"], parsedInput.Data["make"])
+	assert.Equal(t, input.Data["model"], parsedInput.Data["model"])
 }
 
 func TestAppSyncEvent_ParseArguments_Read(t *testing.T) {
 	input := GetUnitInput{
 		ID:        "123e4567-e89b-12d3-a456-426614174000",
 		AccountID: "account-123",
+		UnitType:  "commercialVehicleType",
 	}
 
 	argsJSON, err := json.Marshal(input)
@@ -109,19 +108,19 @@ func TestAppSyncEvent_ParseArguments_Read(t *testing.T) {
 
 	assert.Equal(t, input.ID, parsedInput.ID)
 	assert.Equal(t, input.AccountID, parsedInput.AccountID)
+	assert.Equal(t, input.UnitType, parsedInput.UnitType)
 }
 
 func TestAppSyncEvent_ParseArguments_Update(t *testing.T) {
-	unit := models.Unit{
-		SuggestedVin: "1HGBH41JXMN109186",
-		Make:         "Honda",
-		Model:        "Accord", // Updated model
-	}
-
 	input := UpdateUnitInput{
 		ID:        "123e4567-e89b-12d3-a456-426614174000",
 		AccountID: "account-123",
-		Unit:      unit,
+		UnitType:  "commercialVehicleType",
+		Data: map[string]interface{}{
+			"suggestedVin": "1HGBH41JXMN109186",
+			"make":         "Honda",
+			"model":        "Accord", // Updated model
+		},
 	}
 
 	argsJSON, err := json.Marshal(input)
@@ -140,13 +139,15 @@ func TestAppSyncEvent_ParseArguments_Update(t *testing.T) {
 
 	assert.Equal(t, input.ID, parsedInput.ID)
 	assert.Equal(t, input.AccountID, parsedInput.AccountID)
-	assert.Equal(t, input.Unit.Model, parsedInput.Unit.Model)
+	assert.Equal(t, input.UnitType, parsedInput.UnitType)
+	assert.Equal(t, input.Data["model"], parsedInput.Data["model"])
 }
 
 func TestAppSyncEvent_ParseArguments_Delete(t *testing.T) {
 	input := DeleteUnitInput{
 		ID:        "123e4567-e89b-12d3-a456-426614174000",
 		AccountID: "account-123",
+		UnitType:  "commercialVehicleType",
 	}
 
 	argsJSON, err := json.Marshal(input)
@@ -165,6 +166,7 @@ func TestAppSyncEvent_ParseArguments_Delete(t *testing.T) {
 
 	assert.Equal(t, input.ID, parsedInput.ID)
 	assert.Equal(t, input.AccountID, parsedInput.AccountID)
+	assert.Equal(t, input.UnitType, parsedInput.UnitType)
 }
 
 func TestAppSyncEvent_ParseArguments_List(t *testing.T) {
@@ -255,9 +257,9 @@ func TestIdentity(t *testing.T) {
 }
 
 func TestListUnitsResponse(t *testing.T) {
-	units := []models.Unit{
-		{SuggestedVin: "VIN1"},
-		{SuggestedVin: "VIN2"},
+	units := []map[string]interface{}{
+		{"id": "unit-1", "suggestedVin": "VIN1"},
+		{"id": "unit-2", "suggestedVin": "VIN2"},
 	}
 	nextToken := "token123"
 
