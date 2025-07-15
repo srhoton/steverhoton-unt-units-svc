@@ -15,29 +15,29 @@ type MockUnitRepository struct {
 }
 
 // Create mocks the Create method
-func (m *MockUnitRepository) Create(ctx context.Context, unit *models.DynamicUnit) error {
+func (m *MockUnitRepository) Create(ctx context.Context, unit *models.Unit) error {
 	args := m.Called(ctx, unit)
 	return args.Error(0)
 }
 
-// GetByID mocks the GetByID method
-func (m *MockUnitRepository) GetByID(ctx context.Context, accountID, unitType, unitID string) (*models.DynamicUnit, error) {
-	args := m.Called(ctx, accountID, unitType, unitID)
+// GetByKey mocks the GetByKey method
+func (m *MockUnitRepository) GetByKey(ctx context.Context, accountID, unitID, unitType string) (*models.Unit, error) {
+	args := m.Called(ctx, accountID, unitID, unitType)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*models.DynamicUnit), args.Error(1)
+	return args.Get(0).(*models.Unit), args.Error(1)
 }
 
 // Update mocks the Update method
-func (m *MockUnitRepository) Update(ctx context.Context, unit *models.DynamicUnit) error {
+func (m *MockUnitRepository) Update(ctx context.Context, unit *models.Unit) error {
 	args := m.Called(ctx, unit)
 	return args.Error(0)
 }
 
 // Delete mocks the Delete method
-func (m *MockUnitRepository) Delete(ctx context.Context, accountID, unitType, unitID string) error {
-	args := m.Called(ctx, accountID, unitType, unitID)
+func (m *MockUnitRepository) Delete(ctx context.Context, accountID, unitID, unitType string) error {
+	args := m.Called(ctx, accountID, unitID, unitType)
 	return args.Error(0)
 }
 
@@ -50,17 +50,17 @@ func (m *MockUnitRepository) List(ctx context.Context, input *appsync.ListUnitsI
 	return args.Get(0).(*appsync.ListUnitsResponse), args.Error(1)
 }
 
-// GetByKey mocks the GetByKey method
-func (m *MockUnitRepository) GetByKey(ctx context.Context, accountID, sortKey string) (*models.DynamicUnit, error) {
-	args := m.Called(ctx, accountID, sortKey)
+// Exists mocks the Exists method
+func (m *MockUnitRepository) Exists(ctx context.Context, accountID, unitID, unitType string) (bool, error) {
+	args := m.Called(ctx, accountID, unitID, unitType)
+	return args.Bool(0), args.Error(1)
+}
+
+// GetByUnitID mocks the GetByUnitID method
+func (m *MockUnitRepository) GetByUnitID(ctx context.Context, unitID string) ([]models.Unit, error) {
+	args := m.Called(ctx, unitID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*models.DynamicUnit), args.Error(1)
-}
-
-// Exists mocks the Exists method
-func (m *MockUnitRepository) Exists(ctx context.Context, accountID, sortKey string) (bool, error) {
-	args := m.Called(ctx, accountID, sortKey)
-	return args.Bool(0), args.Error(1)
+	return args.Get(0).([]models.Unit), args.Error(1)
 }

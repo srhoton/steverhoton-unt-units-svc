@@ -2,6 +2,8 @@ package appsync
 
 import (
 	"encoding/json"
+
+	"github.com/steverhoton/unt-units-svc/internal/models"
 )
 
 // AppSyncEvent represents the event structure from AppSync
@@ -75,37 +77,36 @@ const (
 
 // CreateUnitInput represents input for creating a unit
 type CreateUnitInput struct {
-	AccountID string                 `json:"accountId"`
-	UnitType  string                 `json:"unitType"`
-	Data      map[string]interface{} `json:"data"`
+	AccountID   string `json:"accountId"`
+	UnitType    string `json:"unitType"` // Type of unit (e.g., commercialVehicleType)
+	models.Unit        // Embed Unit fields directly
 }
 
 // UpdateUnitInput represents input for updating a unit
 type UpdateUnitInput struct {
-	ID        string                 `json:"id"`
-	AccountID string                 `json:"accountId"`
-	UnitType  string                 `json:"unitType"`
-	Data      map[string]interface{} `json:"data"`
+	ID          string `json:"id"`
+	AccountID   string `json:"accountId"`
+	UnitType    string `json:"unitType"` // Type of unit (required to form the SK)
+	models.Unit        // Embed Unit fields directly
 }
 
 // DeleteUnitInput represents input for deleting a unit
 type DeleteUnitInput struct {
 	ID        string `json:"id"`
 	AccountID string `json:"accountId"`
-	UnitType  string `json:"unitType"`
+	UnitType  string `json:"unitType"` // Type of unit (required to form the SK)
 }
 
 // GetUnitInput represents input for getting a single unit
 type GetUnitInput struct {
 	ID        string `json:"id"`
 	AccountID string `json:"accountId"`
-	UnitType  string `json:"unitType"`
+	UnitType  string `json:"unitType"` // Type of unit (required to form the SK)
 }
 
 // ListUnitsInput represents input for listing units
 type ListUnitsInput struct {
 	AccountID string  `json:"accountId"`
-	UnitType  *string `json:"unitType,omitempty"`
 	Limit     *int    `json:"limit,omitempty"`
 	NextToken *string `json:"nextToken,omitempty"`
 	Filter    *string `json:"filter,omitempty"`
@@ -128,9 +129,9 @@ type ErrorInfo struct {
 
 // ListUnitsResponse represents the response for list operations
 type ListUnitsResponse struct {
-	Items     []map[string]interface{} `json:"items"`
-	NextToken *string                  `json:"nextToken,omitempty"`
-	Count     int                      `json:"count"`
+	Items     []models.Unit `json:"items"`
+	NextToken *string       `json:"nextToken,omitempty"`
+	Count     int           `json:"count"`
 }
 
 // GetOperationType determines the operation type based on the field name
@@ -155,45 +156,35 @@ func (e *AppSyncEvent) GetOperationType() OperationType {
 func (e *AppSyncEvent) ParseArguments() (interface{}, error) {
 	switch e.GetOperationType() {
 	case OperationTypeCreate:
-		var wrapper struct {
-			Input CreateUnitInput `json:"input"`
-		}
-		if err := json.Unmarshal(e.Arguments, &wrapper); err != nil {
+		var input CreateUnitInput
+		if err := json.Unmarshal(e.Arguments, &input); err != nil {
 			return nil, err
 		}
-		return wrapper.Input, nil
+		return input, nil
 	case OperationTypeRead:
-		var wrapper struct {
-			Input GetUnitInput `json:"input"`
-		}
-		if err := json.Unmarshal(e.Arguments, &wrapper); err != nil {
+		var input GetUnitInput
+		if err := json.Unmarshal(e.Arguments, &input); err != nil {
 			return nil, err
 		}
-		return wrapper.Input, nil
+		return input, nil
 	case OperationTypeUpdate:
-		var wrapper struct {
-			Input UpdateUnitInput `json:"input"`
-		}
-		if err := json.Unmarshal(e.Arguments, &wrapper); err != nil {
+		var input UpdateUnitInput
+		if err := json.Unmarshal(e.Arguments, &input); err != nil {
 			return nil, err
 		}
-		return wrapper.Input, nil
+		return input, nil
 	case OperationTypeDelete:
-		var wrapper struct {
-			Input DeleteUnitInput `json:"input"`
-		}
-		if err := json.Unmarshal(e.Arguments, &wrapper); err != nil {
+		var input DeleteUnitInput
+		if err := json.Unmarshal(e.Arguments, &input); err != nil {
 			return nil, err
 		}
-		return wrapper.Input, nil
+		return input, nil
 	case OperationTypeList:
-		var wrapper struct {
-			Input ListUnitsInput `json:"input"`
-		}
-		if err := json.Unmarshal(e.Arguments, &wrapper); err != nil {
+		var input ListUnitsInput
+		if err := json.Unmarshal(e.Arguments, &input); err != nil {
 			return nil, err
 		}
-		return wrapper.Input, nil
+		return input, nil
 	default:
 		return nil, nil
 	}
