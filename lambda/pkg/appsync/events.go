@@ -77,14 +77,16 @@ const (
 
 // CreateUnitInput represents input for creating a unit
 type CreateUnitInput struct {
-	AccountID string `json:"accountId"`
+	AccountID   string `json:"accountId"`
+	UnitType    string `json:"unitType"` // Type of unit (e.g., commercialVehicleType)
 	models.Unit        // Embed Unit fields directly
 }
 
 // UpdateUnitInput represents input for updating a unit
 type UpdateUnitInput struct {
-	ID        string `json:"id"`
-	AccountID string `json:"accountId"`
+	ID          string `json:"id"`
+	AccountID   string `json:"accountId"`
+	UnitType    string `json:"unitType"` // Type of unit (required to form the SK)
 	models.Unit        // Embed Unit fields directly
 }
 
@@ -92,12 +94,14 @@ type UpdateUnitInput struct {
 type DeleteUnitInput struct {
 	ID        string `json:"id"`
 	AccountID string `json:"accountId"`
+	UnitType  string `json:"unitType"` // Type of unit (required to form the SK)
 }
 
 // GetUnitInput represents input for getting a single unit
 type GetUnitInput struct {
 	ID        string `json:"id"`
 	AccountID string `json:"accountId"`
+	UnitType  string `json:"unitType"` // Type of unit (required to form the SK)
 }
 
 // ListUnitsInput represents input for listing units

@@ -27,6 +27,7 @@ func TestUnitHandlers_HandleCreate_Success(t *testing.T) {
 
 	input := appsync.CreateUnitInput{
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 		Unit:      unit,
 	}
 	argsJSON, err := json.Marshal(input)
@@ -38,9 +39,10 @@ func TestUnitHandlers_HandleCreate_Success(t *testing.T) {
 		Arguments: argsJSON,
 	}
 
-	// Expected unit should have AccountID set
+	// Expected unit should have AccountID and UnitType set
 	expectedUnit := unit
 	expectedUnit.AccountID = "test-account-123"
+	expectedUnit.UnitType = "commercialVehicleType"
 
 	// Mock expectations
 	mockRepo.On("Create", mock.Anything, &expectedUnit).Return(nil)
@@ -72,6 +74,7 @@ func TestUnitHandlers_HandleCreate_ValidationError(t *testing.T) {
 			name: "missing accountId",
 			input: appsync.CreateUnitInput{
 				AccountID: "", // Missing
+				UnitType:  "commercialVehicleType",
 				Unit: models.Unit{
 					SuggestedVin: "1HGBH41JXMN109186",
 					Make:         "Honda",
@@ -81,9 +84,23 @@ func TestUnitHandlers_HandleCreate_ValidationError(t *testing.T) {
 			expectedError: "AccountID is required",
 		},
 		{
+			name: "missing unitType",
+			input: appsync.CreateUnitInput{
+				AccountID: "test-account-123",
+				UnitType:  "", // Missing
+				Unit: models.Unit{
+					SuggestedVin: "1HGBH41JXMN109186",
+					Make:         "Honda",
+					Model:        "Civic",
+				},
+			},
+			expectedError: "UnitType is required",
+		},
+		{
 			name: "missing suggestedVin",
 			input: appsync.CreateUnitInput{
 				AccountID: "test-account-123",
+				UnitType:  "commercialVehicleType",
 				Unit: models.Unit{
 					SuggestedVin: "", // Missing
 					Make:         "Honda",
@@ -134,6 +151,7 @@ func TestUnitHandlers_HandleCreate_RepositoryError(t *testing.T) {
 
 	input := appsync.CreateUnitInput{
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 		Unit:      unit,
 	}
 	argsJSON, err := json.Marshal(input)
@@ -145,9 +163,10 @@ func TestUnitHandlers_HandleCreate_RepositoryError(t *testing.T) {
 		Arguments: argsJSON,
 	}
 
-	// Expected unit should have AccountID set
+	// Expected unit should have AccountID and UnitType set
 	expectedUnit := unit
 	expectedUnit.AccountID = "test-account-123"
+	expectedUnit.UnitType = "commercialVehicleType"
 
 	// Mock expectations - repository returns error
 	mockRepo.On("Create", mock.Anything, &expectedUnit).Return(errors.New("database connection failed"))
@@ -174,6 +193,7 @@ func TestUnitHandlers_HandleRead_Success(t *testing.T) {
 	unit := &models.Unit{
 		ID:           "test-unit-id",
 		AccountID:    "test-account-123",
+		UnitType:     "commercialVehicleType",
 		SuggestedVin: "1HGBH41JXMN109186",
 		Make:         "Honda",
 		Model:        "Civic",
@@ -182,6 +202,7 @@ func TestUnitHandlers_HandleRead_Success(t *testing.T) {
 	input := appsync.GetUnitInput{
 		ID:        "test-unit-id",
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 	}
 	argsJSON, err := json.Marshal(input)
 	require.NoError(t, err)
@@ -193,7 +214,7 @@ func TestUnitHandlers_HandleRead_Success(t *testing.T) {
 	}
 
 	// Mock expectations
-	mockRepo.On("GetByKey", mock.Anything, "test-unit-id", "test-account-123").Return(unit, nil)
+	mockRepo.On("GetByKey", mock.Anything, "test-account-123", "test-unit-id", "commercialVehicleType").Return(unit, nil)
 
 	// Execute
 	response, err := handlers.HandleRead(context.Background(), event)
@@ -216,6 +237,7 @@ func TestUnitHandlers_HandleRead_NotFound(t *testing.T) {
 	input := appsync.GetUnitInput{
 		ID:        "test-unit-id",
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 	}
 	argsJSON, err := json.Marshal(input)
 	require.NoError(t, err)
@@ -227,7 +249,7 @@ func TestUnitHandlers_HandleRead_NotFound(t *testing.T) {
 	}
 
 	// Mock expectations - unit not found
-	mockRepo.On("GetByKey", mock.Anything, "test-unit-id", "test-account-123").Return(nil, nil)
+	mockRepo.On("GetByKey", mock.Anything, "test-account-123", "test-unit-id", "commercialVehicleType").Return(nil, nil)
 
 	// Execute
 	response, err := handlers.HandleRead(context.Background(), event)
@@ -268,6 +290,15 @@ func TestUnitHandlers_HandleRead_ValidationError(t *testing.T) {
 				AccountID: "", // Missing
 			},
 			expectedError: "AccountID is required",
+		},
+		{
+			name: "missing unitType",
+			input: appsync.GetUnitInput{
+				ID:        "test-unit-id",
+				AccountID: "test-account-123",
+				UnitType:  "", // Missing
+			},
+			expectedError: "UnitType is required",
 		},
 	}
 
@@ -312,6 +343,7 @@ func TestUnitHandlers_HandleUpdate_Success(t *testing.T) {
 	input := appsync.UpdateUnitInput{
 		ID:        "test-unit-id",
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 		Unit:      unit,
 	}
 	argsJSON, err := json.Marshal(input)
@@ -327,6 +359,7 @@ func TestUnitHandlers_HandleUpdate_Success(t *testing.T) {
 	existingUnit := &models.Unit{
 		ID:           "test-unit-id",
 		AccountID:    "test-account-123",
+		UnitType:     "commercialVehicleType",
 		SuggestedVin: "OLD_VIN_123",
 		Make:         "Honda",
 		Model:        "Civic",
@@ -336,7 +369,8 @@ func TestUnitHandlers_HandleUpdate_Success(t *testing.T) {
 	expectedUnit := unit
 	expectedUnit.ID = input.ID
 	expectedUnit.AccountID = input.AccountID
-	mockRepo.On("GetByKey", mock.Anything, "test-unit-id", "test-account-123").Return(existingUnit, nil)
+	expectedUnit.UnitType = input.UnitType
+	mockRepo.On("GetByKey", mock.Anything, "test-account-123", "test-unit-id", "commercialVehicleType").Return(existingUnit, nil)
 	mockRepo.On("Update", mock.Anything, &expectedUnit).Return(nil)
 
 	// Execute
@@ -366,6 +400,7 @@ func TestUnitHandlers_HandleUpdate_ValidationError(t *testing.T) {
 			input: appsync.UpdateUnitInput{
 				ID:        "", // Missing
 				AccountID: "test-account-123",
+				UnitType:  "commercialVehicleType",
 				Unit: models.Unit{
 					SuggestedVin: "1HGBH41JXMN109186",
 					Make:         "Honda",
@@ -379,6 +414,7 @@ func TestUnitHandlers_HandleUpdate_ValidationError(t *testing.T) {
 			input: appsync.UpdateUnitInput{
 				ID:        "test-unit-id",
 				AccountID: "", // Missing
+				UnitType:  "commercialVehicleType",
 				Unit: models.Unit{
 					SuggestedVin: "1HGBH41JXMN109186",
 					Make:         "Honda",
@@ -388,17 +424,14 @@ func TestUnitHandlers_HandleUpdate_ValidationError(t *testing.T) {
 			expectedError: "AccountID is required",
 		},
 		{
-			name: "missing suggestedVin",
+			name: "missing unitType",
 			input: appsync.UpdateUnitInput{
 				ID:        "test-unit-id",
 				AccountID: "test-account-123",
-				Unit: models.Unit{
-					SuggestedVin: "", // Missing
-					Make:         "Honda",
-					Model:        "Civic",
-				},
+				UnitType:  "", // Missing
+				Unit:      models.Unit{},
 			},
-			expectedError: "SuggestedVin is required",
+			expectedError: "UnitType is required",
 		},
 	}
 
@@ -444,6 +477,7 @@ func TestUnitHandlers_HandleUpdate_NotFound(t *testing.T) {
 	input := appsync.UpdateUnitInput{
 		ID:        "non-existent-id",
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 		Unit:      unit,
 	}
 	argsJSON, err := json.Marshal(input)
@@ -456,7 +490,7 @@ func TestUnitHandlers_HandleUpdate_NotFound(t *testing.T) {
 	}
 
 	// Mock expectations - unit not found
-	mockRepo.On("GetByKey", mock.Anything, "non-existent-id", "test-account-123").Return(nil, nil)
+	mockRepo.On("GetByKey", mock.Anything, "test-account-123", "non-existent-id", "commercialVehicleType").Return(nil, nil)
 
 	// Execute
 	response, err := handlers.HandleUpdate(context.Background(), event)
@@ -487,6 +521,7 @@ func TestUnitHandlers_HandleUpdate_ExistenceCheckError(t *testing.T) {
 	input := appsync.UpdateUnitInput{
 		ID:        "test-unit-id",
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 		Unit:      unit,
 	}
 	argsJSON, err := json.Marshal(input)
@@ -499,7 +534,7 @@ func TestUnitHandlers_HandleUpdate_ExistenceCheckError(t *testing.T) {
 	}
 
 	// Mock expectations - GetByKey returns error
-	mockRepo.On("GetByKey", mock.Anything, "test-unit-id", "test-account-123").Return(nil, errors.New("database connection failed"))
+	mockRepo.On("GetByKey", mock.Anything, "test-account-123", "test-unit-id", "commercialVehicleType").Return(nil, errors.New("database connection failed"))
 
 	// Execute
 	response, err := handlers.HandleUpdate(context.Background(), event)
@@ -530,6 +565,7 @@ func TestUnitHandlers_HandleUpdate_RepositoryError(t *testing.T) {
 	input := appsync.UpdateUnitInput{
 		ID:        "test-unit-id",
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 		Unit:      unit,
 	}
 	argsJSON, err := json.Marshal(input)
@@ -545,6 +581,7 @@ func TestUnitHandlers_HandleUpdate_RepositoryError(t *testing.T) {
 	existingUnit := &models.Unit{
 		ID:           "test-unit-id",
 		AccountID:    "test-account-123",
+		UnitType:     "commercialVehicleType",
 		SuggestedVin: "OLD_VIN_123",
 		Make:         "Honda",
 		Model:        "Civic",
@@ -554,7 +591,8 @@ func TestUnitHandlers_HandleUpdate_RepositoryError(t *testing.T) {
 	expectedUnit := unit
 	expectedUnit.ID = input.ID
 	expectedUnit.AccountID = input.AccountID
-	mockRepo.On("GetByKey", mock.Anything, "test-unit-id", "test-account-123").Return(existingUnit, nil)
+	expectedUnit.UnitType = input.UnitType
+	mockRepo.On("GetByKey", mock.Anything, "test-account-123", "test-unit-id", "commercialVehicleType").Return(existingUnit, nil)
 	mockRepo.On("Update", mock.Anything, &expectedUnit).Return(errors.New("database update failed"))
 
 	// Execute
@@ -579,6 +617,7 @@ func TestUnitHandlers_HandleDelete_Success(t *testing.T) {
 	input := appsync.DeleteUnitInput{
 		ID:        "test-unit-id",
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 	}
 	argsJSON, err := json.Marshal(input)
 	require.NoError(t, err)
@@ -590,7 +629,7 @@ func TestUnitHandlers_HandleDelete_Success(t *testing.T) {
 	}
 
 	// Mock expectations
-	mockRepo.On("Delete", mock.Anything, "test-unit-id", "test-account-123").Return(nil)
+	mockRepo.On("Delete", mock.Anything, "test-account-123", "test-unit-id", "commercialVehicleType").Return(nil)
 
 	// Execute
 	response, err := handlers.HandleDelete(context.Background(), event)
@@ -637,6 +676,15 @@ func TestUnitHandlers_HandleDelete_ValidationError(t *testing.T) {
 			},
 			expectedError: "AccountID is required",
 		},
+		{
+			name: "missing unitType",
+			input: appsync.DeleteUnitInput{
+				ID:        "test-unit-id",
+				AccountID: "test-account-123",
+				UnitType:  "", // Missing
+			},
+			expectedError: "UnitType is required",
+		},
 	}
 
 	for _, tt := range tests {
@@ -674,6 +722,7 @@ func TestUnitHandlers_HandleDelete_RepositoryError(t *testing.T) {
 	input := appsync.DeleteUnitInput{
 		ID:        "test-unit-id",
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 	}
 	argsJSON, err := json.Marshal(input)
 	require.NoError(t, err)
@@ -685,7 +734,7 @@ func TestUnitHandlers_HandleDelete_RepositoryError(t *testing.T) {
 	}
 
 	// Mock expectations - repository returns error
-	mockRepo.On("Delete", mock.Anything, "test-unit-id", "test-account-123").Return(errors.New("database connection failed"))
+	mockRepo.On("Delete", mock.Anything, "test-account-123", "test-unit-id", "commercialVehicleType").Return(errors.New("database connection failed"))
 
 	// Execute
 	response, err := handlers.HandleDelete(context.Background(), event)
@@ -709,6 +758,7 @@ func TestUnitHandlers_HandleDelete_UnitNotFound(t *testing.T) {
 	input := appsync.DeleteUnitInput{
 		ID:        "non-existent-id",
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 	}
 	argsJSON, err := json.Marshal(input)
 	require.NoError(t, err)
@@ -720,7 +770,7 @@ func TestUnitHandlers_HandleDelete_UnitNotFound(t *testing.T) {
 	}
 
 	// Mock expectations - unit not found
-	mockRepo.On("Delete", mock.Anything, "non-existent-id", "test-account-123").Return(errors.New("unit with id non-existent-id not found for account test-account-123"))
+	mockRepo.On("Delete", mock.Anything, "test-account-123", "non-existent-id", "commercialVehicleType").Return(errors.New("unit with id non-existent-id not found for account test-account-123"))
 
 	// Execute
 	response, err := handlers.HandleDelete(context.Background(), event)
@@ -832,6 +882,7 @@ func TestUnitHandlers_DumpEvent(t *testing.T) {
 
 	input := appsync.CreateUnitInput{
 		AccountID: "test-account-123",
+		UnitType:  "commercialVehicleType",
 		Unit:      unit,
 	}
 	argsJSON, err := json.Marshal(input)

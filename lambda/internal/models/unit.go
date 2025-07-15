@@ -24,8 +24,9 @@ type AcesAttribute struct {
 // Unit represents a commercial vehicle type unit in DynamoDB
 type Unit struct {
 	// DynamoDB key fields
-	ID        string `json:"id" dynamodbav:"pk"`        // Primary Key (UUID)
-	AccountID string `json:"accountId" dynamodbav:"sk"` // Sort Key
+	AccountID string `json:"accountId" dynamodbav:"pk"`      // Primary Key
+	ID        string `json:"id" dynamodbav:"id"`             // Unit ID (UUID) - will be part of SK
+	UnitType  string `json:"unitType" dynamodbav:"unitType"` // Type of unit (e.g., commercialVehicleType)
 
 	// Core identification fields
 	SuggestedVin      string `json:"suggestedVin" dynamodbav:"suggestedVin"`
@@ -233,15 +234,24 @@ type Unit struct {
 	// Extended data
 	ExtendedAttributes []ExtendedAttribute `json:"extendedAttributes,omitempty" dynamodbav:"extendedAttributes,omitempty"`
 	AcesAttributes     []AcesAttribute     `json:"acesAttributes,omitempty" dynamodbav:"acesAttributes,omitempty"`
+
+	// Computed field for DynamoDB SK - not stored directly
+	SortKey string `json:"-" dynamodbav:"sk,omitempty"`
 }
 
 // GetKey returns the composite primary key for DynamoDB operations (PK + SK)
 func (u *Unit) GetKey() map[string]types.AttributeValue {
+	sk := u.GetSortKey()
 	key, _ := attributevalue.MarshalMap(map[string]interface{}{
-		"pk": u.ID,        // Primary Key (UUID)
-		"sk": u.AccountID, // Sort Key (AccountID)
+		"pk": u.AccountID, // Primary Key (AccountID)
+		"sk": sk,          // Sort Key ({unitId}#{unitType})
 	})
 	return key
+}
+
+// GetSortKey generates the sort key in the format {unitId}#{unitType}
+func (u *Unit) GetSortKey() string {
+	return u.ID + "#" + u.UnitType
 }
 
 // SetTimestamps sets created and updated timestamps

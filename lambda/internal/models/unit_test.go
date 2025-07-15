@@ -20,10 +20,11 @@ func TestUnit_GetKey(t *testing.T) {
 			unit: Unit{
 				ID:        "123e4567-e89b-12d3-a456-426614174000",
 				AccountID: "account-123",
+				UnitType:  "commercialVehicleType",
 			},
 			want: map[string]string{
-				"pk": "123e4567-e89b-12d3-a456-426614174000",
-				"sk": "account-123",
+				"pk": "account-123",
+				"sk": "123e4567-e89b-12d3-a456-426614174000#commercialVehicleType",
 			},
 		},
 		{
@@ -31,10 +32,11 @@ func TestUnit_GetKey(t *testing.T) {
 			unit: Unit{
 				ID:        "",
 				AccountID: "",
+				UnitType:  "",
 			},
 			want: map[string]string{
 				"pk": "",
-				"sk": "",
+				"sk": "#",
 			},
 		},
 	}
@@ -59,23 +61,71 @@ func TestUnit_GetKey(t *testing.T) {
 	}
 }
 
+func TestUnit_GetSortKey(t *testing.T) {
+	tests := []struct {
+		name string
+		unit Unit
+		want string
+	}{
+		{
+			name: "Valid unit with ID and type",
+			unit: Unit{
+				ID:       "123e4567-e89b-12d3-a456-426614174000",
+				UnitType: "commercialVehicleType",
+			},
+			want: "123e4567-e89b-12d3-a456-426614174000#commercialVehicleType",
+		},
+		{
+			name: "Unit with empty fields",
+			unit: Unit{
+				ID:       "",
+				UnitType: "",
+			},
+			want: "#",
+		},
+		{
+			name: "Unit with only ID",
+			unit: Unit{
+				ID:       "123e4567-e89b-12d3-a456-426614174000",
+				UnitType: "",
+			},
+			want: "123e4567-e89b-12d3-a456-426614174000#",
+		},
+		{
+			name: "Unit with only type",
+			unit: Unit{
+				ID:       "",
+				UnitType: "commercialVehicleType",
+			},
+			want: "#commercialVehicleType",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.unit.GetSortKey()
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestUnit_GenerateID(t *testing.T) {
 	unit := Unit{}
-	
+
 	// Initially no ID
 	assert.Empty(t, unit.ID)
-	
+
 	// Generate ID
 	unit.GenerateID()
-	
+
 	// Should have a UUID
 	assert.NotEmpty(t, unit.ID)
 	assert.Len(t, unit.ID, 36) // Standard UUID length
-	
+
 	// Generate another ID for a different unit
 	unit2 := Unit{}
 	unit2.GenerateID()
-	
+
 	// Should be different
 	assert.NotEqual(t, unit.ID, unit2.ID)
 }
@@ -192,6 +242,7 @@ func TestUnit_FullStructValidation(t *testing.T) {
 	unit := Unit{
 		ID:                           "123e4567-e89b-12d3-a456-426614174000",
 		AccountID:                    "account-123",
+		UnitType:                     "commercialVehicleType",
 		SuggestedVin:                 "1HGBH41JXMN109186",
 		ErrorCode:                    "E001",
 		PossibleValues:               "Value1,Value2",
