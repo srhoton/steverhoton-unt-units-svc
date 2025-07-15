@@ -1,0 +1,17 @@
+Session Prompts:
+
+1. User: "Please continue the conversation from where we left it off without asking the user any further questions. Continue with the last task that you were asked to work on."
+   - Context: Continuation of previous session implementing DynamoDB PK/SK schema swap
+
+2. User: "ok, can you deploy it using the terraform in the terraform directory? Modify the terraform if you need to. Follow all terraform rules in your memory."
+   - Requested deployment of the schema changes using Terraform
+   - Required modification of infrastructure to support new GSI
+
+3. User: "ok. Please commit your work, add prompts in this session to the commit via git notes, push it, and using your github mcp integration, create a PR."
+   - Final request to commit, document, and create PR
+
+Previous Session Context:
+- Initial bug fix for GraphQL schema compliance (null vs empty array)
+- Major schema change request to swap PK/SK in DynamoDB
+- Implementation of new key structure with AccountID as PK and composite SK
+- Addition of unitType field and GSI on unitId
