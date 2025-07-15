@@ -6,48 +6,7 @@
   "type": "object",
   "required": [
     "id",
-    "accountId",
-    "locationId",
-    "suggestedVin",
-    "errorCode",
-    "possibleValues",
-    "errorText",
-    "vehicleDescriptor",
-    "note",
-    "make",
-    "manufacturerName",
-    "model",
-    "modelYear",
-    "plantCity",
-    "series",
-    "vehicleType",
-    "plantCountry",
-    "bodyClass",
-    "doors",
-    "grossVehicleWeightRatingFrom",
-    "wheelBaseInchesFrom",
-    "grossVehicleWeightRatingTo",
-    "bedType",
-    "cabType",
-    "trailerTypeConnection",
-    "trailerBodyType",
-    "customMotorcycleType",
-    "motorcycleSuspensionType",
-    "motorcycleChassisType",
-    "busFloorConfigurationType",
-    "busType",
-    "engineNumberOfCylinders",
-    "displacementCc",
-    "displacementCi",
-    "displacementL",
-    "fuelTypePrimary",
-    "engineBrakeHpFrom",
-    "seatBeltType",
-    "otherRestraintSystemInfo",
-    "frontAirBagLocations",
-    "createdAt",
-    "updatedAt",
-    "deletedAt"
+    "accountId"
   ],
   "properties": {
     "id": {
@@ -60,9 +19,9 @@
       "description": "Account ID (DynamoDB Primary Key)"
     },
     "locationId": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "uuid",
-      "description": "Location ID (DynamoDB Sort Key)"
+      "description": "Location ID (optional)"
     },
     "suggestedVin": {
       "type": "string",
