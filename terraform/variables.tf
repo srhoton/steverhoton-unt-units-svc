@@ -23,7 +23,7 @@ variable "environment" {
 variable "project_name" {
   description = "Name of the project"
   type        = string
-  default     = "sr-unt-units-svc"
+  default     = "sr-unit"
 
   validation {
     condition     = can(regex("^[a-z0-9-]+$", var.project_name))
