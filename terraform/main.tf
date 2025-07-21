@@ -16,7 +16,7 @@ locals {
 
 # DynamoDB table for storing unit data
 resource "aws_dynamodb_table" "units_table" {
-  name           = "${local.name_prefix}-units"
+  name           = local.name_prefix
   billing_mode   = var.dynamodb_billing_mode
   hash_key       = "pk"
   range_key      = "sk"

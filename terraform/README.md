@@ -13,7 +13,7 @@ This Terraform configuration deploys the production infrastructure for the UNT U
 - Terraform >= 1.0
 - AWS CLI configured with appropriate credentials
 - Go 1.24+ (for building the Lambda function)
-- Access to the `srhoton-tfstate` S3 bucket
+- Access to the `steve-rhoton-tfstate` S3 bucket
 
 ## Quick Start
 
@@ -53,9 +53,9 @@ See [APPSYNC_RESOLVER_GUIDE.md](./APPSYNC_RESOLVER_GUIDE.md) for detailed instru
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
-| `aws_region` | AWS region for deployment | `us-east-1` | No |
-| `environment` | Environment name (dev/staging/prod) | `dev` | No |
-| `project_name` | Project name | `unt-units-svc` | No |
+| `aws_region` | AWS region for deployment | `us-west-2` | No |
+| `environment` | Environment name (dev/staging/prod/sandbox) | `sandbox` | No |
+| `project_name` | Project name | `sr-unt-units-svc` | No |
 | `lambda_timeout` | Lambda timeout in seconds | `30` | No |
 | `lambda_memory_size` | Lambda memory in MB | `256` | No |
 | `lambda_architecture` | Lambda architecture (x86_64/arm64) | `arm64` | No |
@@ -69,8 +69,8 @@ See [APPSYNC_RESOLVER_GUIDE.md](./APPSYNC_RESOLVER_GUIDE.md) for detailed instru
 
 ```hcl
 aws_region    = "us-west-2"
-environment   = "prod"
-project_name  = "unt-units-svc"
+environment   = "sandbox"
+project_name  = "sr-unt-units-svc"
 lambda_timeout = 60
 lambda_memory_size = 512
 log_level     = "INFO"
