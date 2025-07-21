@@ -1,0 +1,15 @@
+Session prompts for this commit:
+
+1. Initial request:
+In this directory we have a golang aws lambda in the lambda directory, and the terraform to deploy it in the terraform directory. We need to make the following changes. Most of this (perhaps all of it) is in the terraform, but review to confirm:
+1. The project name should now be sr-unt-units-svc.
+2. The environment is 'sandbox'.
+3. The AWS region should be us-west-2.
+4. The table name should just be the same as the variable 'name-prefix'.
+5. The state should now be maintained in a bucket called 'steve-rhoton-tfstate'.
+
+2. Follow-up request:
+ok, can you fmt, lint, validate, then plan and apply those changes?
+
+3. Final request:
+ok. Please commit your work, add prompts in this session to the commit via git notes, push it, and using your github mcp integration, create a PR.
