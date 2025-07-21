@@ -1,0 +1,19 @@
+Session prompts:
+
+1. User: In this directory we have a golang aws lambda in the lambda directory, and the terraform to deploy it in the terraform directory. We need to make the following changes. Most of this (perhaps all of it) is in the terraform, but review to confirm:
+
+1. The variable 'project_name' should now be sr-unit.
+2. The environment needs to be 'sandbox'.
+3. The lambda name should now just be the same as the variable '${var.project_name}-${var.environment}'.
+4. The AWS region should be us-west-2.
+5. The table name should just be the same as the variable '${var.project_name}-${var.environment}'.
+6. The state should now be maintained in a bucket called 'steve-rhoton-tfstate'.
+
+Ultrathink, and let me know what questions you have.
+
+2. User: ok, can you fmt, lint, validate, then plan and apply those changes?
+
+3. User: run the command to re-enable deletion protection
+
+4. User: <command-message>trueup is running…</command-message>
+<command-name>/trueup</command-name>ok. Please commit your work, add prompts in this session to the commit via git notes, push it, and using your github mcp integration, create a PR.
