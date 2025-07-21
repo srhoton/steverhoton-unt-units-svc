@@ -16,7 +16,7 @@ locals {
 
 # DynamoDB table for storing unit data
 resource "aws_dynamodb_table" "units_table" {
-  name           = "${local.name_prefix}-units"
+  name           = local.name_prefix
   billing_mode   = var.dynamodb_billing_mode
   hash_key       = "pk"
   range_key      = "sk"
@@ -130,7 +130,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 
 # CloudWatch log group for Lambda function
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
-  name              = "/aws/lambda/${local.name_prefix}-lambda"
+  name              = "/aws/lambda/${local.name_prefix}"
   retention_in_days = 14
 
   tags = merge(local.common_tags, {
@@ -185,7 +185,7 @@ data "archive_file" "lambda_zip" {
 # Lambda function
 resource "aws_lambda_function" "units_lambda" {
   filename         = local.lambda_zip_path
-  function_name    = "${local.name_prefix}-lambda"
+  function_name    = local.name_prefix
   role             = aws_iam_role.lambda_role.arn
   handler          = "bootstrap"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256

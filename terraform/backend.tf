@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket  = "srhoton-tfstate"
-    key     = "steverhoton-unt-units-svc/terraform.tfstate"
-    region  = "us-east-1"
+    bucket  = "steve-rhoton-tfstate"
+    key     = "sr-unit/terraform.tfstate"
+    region  = "us-west-2"
     encrypt = true
   }
 }

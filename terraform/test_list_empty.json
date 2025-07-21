@@ -1,0 +1,29 @@
+{
+  "typeName": "Query",
+  "fieldName": "listUnits",
+  "arguments": {
+    "accountId": "empty-account-no-units",
+    "limit": 10
+  },
+  "identity": {
+    "sub": "test-user",
+    "issuer": "test-issuer",
+    "username": "test-user",
+    "claims": {
+      "sub": "test-user",
+      "username": "test-user"
+    },
+    "sourceIp": ["127.0.0.1"],
+    "defaultAuthStrategy": "ALLOW"
+  },
+  "request": {
+    "headers": {}
+  },
+  "info": {
+    "fieldName": "listUnits",
+    "parentTypeName": "Query",
+    "variables": {},
+    "selectionSetList": [],
+    "selectionSetGraphQL": ""
+  }
+}

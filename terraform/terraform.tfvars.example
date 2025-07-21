@@ -2,11 +2,11 @@
 # Copy this file to terraform.tfvars and customize as needed
 
 # AWS Configuration
-aws_region = "us-east-1"
+aws_region = "us-west-2"
 
 # Environment Configuration
-environment  = "prod"
-project_name = "unt-units-svc"
+environment  = "sandbox"
+project_name = "sr-unt-units-svc"
 
 # Lambda Configuration
 lambda_timeout      = 30
@@ -26,5 +26,5 @@ tags = {
   Owner       = "platform-team"
   CostCenter  = "engineering"
   Purpose     = "unt-units-service"
-  Environment = "production"
+  Environment = "sandbox"
 }

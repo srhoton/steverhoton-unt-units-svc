@@ -1,0 +1,69 @@
+{
+  "typeName": "Mutation",
+  "fieldName": "createUnit",
+  "arguments": {
+    "accountId": "test-account-12345",
+    "id": "bb4a575d-e030-43d1-8f15-95604a227913",
+    "suggestedVin": "WA1LFAFP7FA014030",
+    "make": "AUDI",
+    "model": "Q5",
+    "modelYear": "2015",
+    "vehicleType": "suv",
+    "errorCode": "",
+    "possibleValues": "",
+    "errorText": "",
+    "vehicleDescriptor": "",
+    "note": "",
+    "manufacturerName": "",
+    "series": "",
+    "plantCity": "",
+    "plantCountry": "",
+    "bodyClass": "",
+    "doors": "",
+    "grossVehicleWeightRatingFrom": "",
+    "grossVehicleWeightRatingTo": "",
+    "wheelBaseInchesFrom": "",
+    "bedType": "",
+    "cabType": "",
+    "trailerTypeConnection": "",
+    "trailerBodyType": "",
+    "customMotorcycleType": "",
+    "motorcycleSuspensionType": "",
+    "motorcycleChassisType": "",
+    "busFloorConfigurationType": "",
+    "busType": "",
+    "engineNumberOfCylinders": "",
+    "displacementCc": "",
+    "displacementCi": "",
+    "displacementL": "",
+    "fuelTypePrimary": "",
+    "engineBrakeHpFrom": "",
+    "seatBeltType": "",
+    "otherRestraintSystemInfo": "",
+    "frontAirBagLocations": "",
+    "createdAt": 0,
+    "updatedAt": 0,
+    "deletedAt": 0
+  },
+  "identity": {
+    "sub": "test-user",
+    "issuer": "test-issuer",
+    "username": "test-user",
+    "claims": {
+      "sub": "test-user",
+      "username": "test-user"
+    },
+    "sourceIp": ["127.0.0.1"],
+    "defaultAuthStrategy": "ALLOW"
+  },
+  "request": {
+    "headers": {}
+  },
+  "info": {
+    "fieldName": "createUnit",
+    "parentTypeName": "Mutation",
+    "variables": {},
+    "selectionSetList": [],
+    "selectionSetGraphQL": ""
+  }
+}
